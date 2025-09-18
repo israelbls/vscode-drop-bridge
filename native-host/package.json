@@ -1,0 +1,8 @@
+{
+  "name": "vscode-drag-helper-native",
+  "version": "1.0.0",
+  "main": "host.js",
+  "scripts": {
+    "start": "node host.js"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "com.vscode.draghelper",
+  "description": "VSCode Drag Helper native host",
+  "path": "C:/Users/User/projects/privet/vscode-drop-bridge/native-host/host-run.bat",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://pjkmbjjfhmigecpidpfccolcbekichki/"]
+}
