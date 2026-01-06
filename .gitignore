@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+vscode-extension/out/
+*.vsix
+
+# Debug and logs
+*.log
+.cursor/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE settings
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Test coverage
+coverage/
+
+# Package manager locks (keep package-lock.json)
+yarn.lock
+pnpm-lock.yaml
+
+# TypeScript
+*.tsbuildinfo
+
+# Chrome extension build
+browser-extension/*.crx
+browser-extension/*.pem
+browser-extension/*.zip

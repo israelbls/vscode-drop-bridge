@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VSCode Drop Bridge - Settings</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #1e1e1e;
+      color: #cccccc;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #007acc 0%, #0098ff 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .logo svg {
+      width: 28px;
+      height: 28px;
+      fill: white;
+    }
+    
+    .header-text h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    
+    .header-text p {
+      font-size: 14px;
+      color: #888;
+    }
+    
+    .section {
+      background: #252526;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-title svg {
+      width: 20px;
+      height: 20px;
+      fill: #007acc;
+    }
+    
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #333;
+    }
+    
+    .setting-row:last-child {
+      border-bottom: none;
+    }
+    
+    .setting-info {
+      flex: 1;
+    }
+    
+    .setting-label {
+      font-size: 14px;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    
+    .setting-description {
+      font-size: 12px;
+      color: #888;
+    }
+    
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+    
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #555;
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+    
+    .toggle input:checked + .toggle-slider {
+      background-color: #007acc;
+    }
+    
+    .toggle input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+    
+    .domain-list {
+      margin-top: 12px;
+    }
+    
+    .domain-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .domain-input {
+      flex: 1;
+      padding: 10px 12px;
+      background: #1e1e1e;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .domain-input:focus {
+      border-color: #007acc;
+    }
+    
+    .domain-input::placeholder {
+      color: #666;
+    }
+    
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    
+    .btn:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-primary {
+      background: #007acc;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #0098ff;
+    }
+    
+    .btn-secondary {
+      background: #333;
+      color: #cccccc;
+    }
+    
+    .btn-secondary:hover {
+      background: #444;
+    }
+    
+    .btn-danger {
+      background: #5a1d1d;
+      color: #ff6b6b;
+    }
+    
+    .btn-danger:hover {
+      background: #6b2222;
+    }
+    
+    .domain-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .domain-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: #333;
+      border-radius: 16px;
+      font-size: 13px;
+    }
+    
+    .domain-tag button {
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      padding: 0;
+      font-size: 16px;
+      line-height: 1;
+    }
+    
+    .domain-tag button:hover {
+      color: #ff6b6b;
+    }
+    
+    .empty-message {
+      color: #666;
+      font-size: 13px;
+      font-style: italic;
+    }
+    
+    .status-message {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: #333;
+      border-radius: 8px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+    }
+    
+    .status-message.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .status-message.success {
+      border-left: 3px solid #4caf50;
+    }
+    
+    .status-message.error {
+      border-left: 3px solid #f44336;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 12px;
+    }
+    
+    .footer-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover {
+      color: #007acc;
+    }
+    
+    .version {
+      font-size: 12px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.5 0h-9L7 1.5V6H2.5L1 7.5v15.07L2.5 24h12.07L16 22.57V18h4.7l1.3-1.43V4.5L17.5 0zm0 2.12l2.38 2.38H17.5V2.12zm-3 20.38h-12v-15h4.5v4.5l6-6 .007 12.007L14.5 22.5zM16 16.5h-1.5v-9l-6 6V6h7.5v10.5z"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>VSCode Drop Bridge</h1>
+        <p>Configure extension settings</p>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+        </svg>
+        General Settings
+      </div>
+      
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Enable Extension</div>
+          <div class="setting-description">Enable or disable the extension globally</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="enableToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Debug Mode</div>
+          <div class="setting-description">Log detailed information to the browser console</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="debugToggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        </svg>
+        Domain Blacklist
+      </div>
+      <p class="setting-description" style="margin-bottom: 12px;">
+        The extension will be disabled on these domains
+      </p>
+      
+      <div class="domain-input-row">
+        <input type="text" class="domain-input" id="blacklistInput" placeholder="e.g., example.com">
+        <button class="btn btn-primary" id="addBlacklist">Add</button>
+      </div>
+      
+      <div class="domain-tags" id="blacklistTags">
+        <span class="empty-message">No domains blacklisted</span>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        Domain Whitelist
+      </div>
+      <p class="setting-description" style="margin-bottom: 12px;">
+        If any domains are listed here, the extension will ONLY work on these domains
+      </p>
+      
+      <div class="domain-input-row">
+        <input type="text" class="domain-input" id="whitelistInput" placeholder="e.g., claude.ai">
+        <button class="btn btn-primary" id="addWhitelist">Add</button>
+      </div>
+      
+      <div class="domain-tags" id="whitelistTags">
+        <span class="empty-message">No domains whitelisted (works on all sites)</span>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/>
+        </svg>
+        Reset Settings
+      </div>
+      <p class="setting-description" style="margin-bottom: 16px;">
+        Reset all settings to their default values
+      </p>
+      <button class="btn btn-danger" id="resetBtn">Reset to Defaults</button>
+    </div>
+    
+    <div class="footer">
+      <div class="footer-links">
+        <a href="https://github.com/vscode-drop-bridge" target="_blank">GitHub</a>
+        <a href="https://github.com/vscode-drop-bridge/issues" target="_blank">Report Issue</a>
+      </div>
+      <div class="version" id="version">v1.0.0</div>
+    </div>
+  </div>
+  
+  <div class="status-message" id="statusMessage"></div>
+  
+  <script src="options.js"></script>
+</body>
+</html>

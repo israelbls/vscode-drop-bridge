@@ -1,0 +1,83 @@
+{
+  "name": "vscode-drop-bridge",
+  "displayName": "VSCode Drop Bridge",
+  "description": "Seamlessly drag and drop or copy-paste files from VSCode to web browsers",
+  "version": "1.0.0",
+  "publisher": "vscode-drop-bridge",
+  "license": "MIT",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/vscode-drop-bridge"
+  },
+  "homepage": "https://github.com/user/vscode-drop-bridge#readme",
+  "bugs": {
+    "url": "https://github.com/user/vscode-drop-bridge/issues"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "drag",
+    "drop",
+    "copy",
+    "paste",
+    "file",
+    "transfer",
+    "browser",
+    "upload",
+    "clipboard"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-drop-bridge.toggleServer",
+        "title": "Toggle Drop Bridge Server"
+      },
+      {
+        "command": "vscode-drop-bridge.copyFilesFromExplorer",
+        "title": "Copy Files (Drop Bridge)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "vscode-drop-bridge.copyFilesFromExplorer",
+          "group": "5_cutcopypaste@1",
+          "when": "explorerResourceIsFolder || explorerResourceIsFile"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "vscode-drop-bridge.copyFilesFromExplorer",
+        "key": "ctrl+c",
+        "mac": "cmd+c",
+        "when": "filesExplorerFocus && !inputFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/mime-types": "^3.0.1",
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.74.0",
+    "@vscode/vsce": "^3.7.1",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "mime-types": "^2.1.35"
+  }
+}
