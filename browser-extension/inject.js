@@ -6,6 +6,8 @@
  * VSCode drags as file drags, even though they only contain text data.
  */
 
+import { showNotification } from './content_script.js';
+
 (function () {
   'use strict';
 
@@ -177,6 +179,19 @@
   }
 
   /**
+ * Find main chat input - simply get the last editable element
+ */
+  function findMainInput() {
+    const inputs = document.querySelectorAll(
+      'textarea:not([readonly]):not([disabled]), [contenteditable="true"]'
+    );
+
+    if (inputs.length === 0) showNotification('No text area elements found');
+    // Chat inputs are rendered last (bottom of page)
+    return inputs[inputs.length - 1] || document.body;
+  }
+
+  /**
    * Dispatch synthetic drop event with files
    */
   function dispatchSyntheticDrop(files, targetX, targetY) {
@@ -217,7 +232,8 @@
         get() { return clipboardData; }
       });
 
-      const pasteTarget = document.activeElement || document.body;
+      const pasteTarget = findMainInput();
+      pasteTarget.focus();
       pasteTarget.dispatchEvent(pasteEvent);
       return 'fallbackPaste';
     }

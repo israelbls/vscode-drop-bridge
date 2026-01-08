@@ -3,16 +3,16 @@
   "displayName": "VSCode Drop Bridge",
   "description": "Seamlessly drag and drop or copy-paste files from VSCode to web browsers",
   "version": "1.0.0",
-  "publisher": "vscode-drop-bridge",
+  "publisher": "Israelbls",
   "license": "MIT",
   "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/user/vscode-drop-bridge"
+    "url": "https://github.com/israelbls/vscode-drop-bridge"
   },
-  "homepage": "https://github.com/user/vscode-drop-bridge#readme",
+  "homepage": "https://github.com/israelbls/vscode-drop-bridge#readme",
   "bugs": {
-    "url": "https://github.com/user/vscode-drop-bridge/issues"
+    "url": "https://github.com/israelbls/vscode-drop-bridge/issues"
   },
   "engines": {
     "vscode": "^1.74.0"

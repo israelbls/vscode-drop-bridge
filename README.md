@@ -1,13 +1,13 @@
 # VSCode Drop Bridge
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-blue?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=vscode-drop-bridge.vscode-drop-bridge)
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-blue?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=Israelbls.vscode-drop-bridge)
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-green?logo=google-chrome)](https://chrome.google.com/webstore)
 
 **Seamlessly drag and drop or copy-paste files from VSCode to web browsers.**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/user/vscode-drop-bridge/main/docs/demo.gif" alt="Demo" width="600">
+  <img src="https://raw.githubusercontent.com/israelbls/vscode-drop-bridge/main/docs/demo.gif" alt="Demo" width="600">
 </p>
 
 ## The Problem
