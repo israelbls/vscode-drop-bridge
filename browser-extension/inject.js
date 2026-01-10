@@ -6,7 +6,6 @@
  * VSCode drags as file drags, even though they only contain text data.
  */
 
-import { showNotification } from './content_script.js';
 
 (function () {
   'use strict';
@@ -239,6 +238,56 @@ import { showNotification } from './content_script.js';
     }
 
     return 'elementDrop';
+  }
+
+  /**
+   * Show notification
+   */
+  function showNotification(message) {
+    const existing = document.getElementById('vscode-drop-bridge-notification');
+    if (existing) existing.remove();
+
+    const notification = document.createElement('div');
+    notification.id = 'vscode-drop-bridge-notification';
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e1e1e;
+      color: #cccccc;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      z-index: 2147483647;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: 1px solid #333;
+      max-width: 350px;
+      animation: vscode-drop-bridge-fade-in 0.2s ease-out;
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes vscode-drop-bridge-fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes vscode-drop-bridge-fade-out {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(10px); }
+      }
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.style.animation = 'vscode-drop-bridge-fade-out 0.2s ease-out forwards';
+      setTimeout(() => {
+        notification.remove();
+        style.remove();
+      }, 200);
+    }, 4000);
   }
 
   // Listen for messages from content script
