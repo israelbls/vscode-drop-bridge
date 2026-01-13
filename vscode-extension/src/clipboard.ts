@@ -121,11 +121,21 @@ export function registerClipboardHandlers(
           `Drop Bridge: ${validPaths.length} file(s) ready for paste`,
           3000
         );
-      }
 
-      // Execute the native copy command if we have URIs (context menu case)
-      if (uri || (uris && uris.length > 0)) {
-        await vscode.commands.executeCommand("filesExplorer.copy");
+        // Execute the native copy command if we have URIs (context menu case)
+        if (uri || (uris && uris.length > 0)) {
+          await vscode.commands.executeCommand("filesExplorer.copy");
+        }
+
+        // Write marker to clipboard so browser extension knows this is from VS Code
+        // This is written AFTER native copy so it becomes the text/plain content
+        const markerText = `vscode-drop-bridge:${validPaths.length}`;
+        await vscode.env.clipboard.writeText(markerText);
+      } else {
+        // No valid files - execute native copy only
+        if (uri || (uris && uris.length > 0)) {
+          await vscode.commands.executeCommand("filesExplorer.copy");
+        }
       }
     }
   );

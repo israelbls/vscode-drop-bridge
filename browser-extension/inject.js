@@ -21,9 +21,45 @@
   window.__vscodeDragFile = null;
   window.__vscodeDragPath = null;
 
+  /**
+   * Check if drag data looks like it's from VSCode (synchronous check)
+   */
+  function isVSCodeDragData(dataTransfer) {
+    const types = Array.from(dataTransfer.types || []);
+    if (types.includes('Files')) return false;
+    if (!types.includes('text/plain')) return false;
+    // VSCode includes these custom types
+    return types.includes('codeeditors') || types.includes('codefiles') || types.includes('application/vnd.code.uri-list');
+  }
+
+  // Direct drag detection in MAIN world (runs BEFORE async message handling)
+  document.addEventListener('dragenter', function(e) {
+    if (e.dataTransfer && isVSCodeDragData(e.dataTransfer)) {
+      window.__vscodeDragActive = true;
+      window.__vscodeDragDetectedAt = Date.now();
+    }
+  }, true); // capture phase - runs first!
+
+  document.addEventListener('dragend', function() {
+    window.__vscodeDragActive = false;
+    window.__vscodeDragFile = null;
+    window.__vscodeDragPath = null;
+  }, true);
+
+  document.addEventListener('drop', function(e) {
+    // Immediately reset on native drop so sites don't see placeholder file
+    // Our synthetic drop will provide the real files
+    if (!e.__vscodeBridgeSynthetic) {
+      window.__vscodeDragActive = false;
+      window.__vscodeDragFile = null;
+      window.__vscodeDragPath = null;
+    }
+  }, true);
+
   // Store original property descriptors
   const originalTypesDescriptor = Object.getOwnPropertyDescriptor(DataTransfer.prototype, 'types');
   const originalFilesDescriptor = Object.getOwnPropertyDescriptor(DataTransfer.prototype, 'files');
+  const originalItemsDescriptor = Object.getOwnPropertyDescriptor(DataTransfer.prototype, 'items');
 
   /**
    * Create a fake DOMStringList that includes 'Files'
@@ -88,7 +124,16 @@
     Object.defineProperty(DataTransfer.prototype, 'types', {
       get() {
         const originalTypes = originalTypesDescriptor.get.call(this);
-        if (window.__vscodeDragActive) {
+        const typesArray = originalTypes ? Array.from(originalTypes) : [];
+        
+        // Check if this looks like VS Code drag data (has VS Code custom types but no 'Files')
+        const hasVSCodeTypes = typesArray.includes('codeeditors') || typesArray.includes('codefiles');
+        const alreadyHasFiles = typesArray.includes('Files');
+        
+        // ALWAYS add 'Files' to types when VS Code types are present
+        // This ensures drop zones recognize VS Code drags as file drags immediately
+        if (hasVSCodeTypes && !alreadyHasFiles) {
+          window.__vscodeDragActive = true; // Set flag for files/items getters
           return createTypesWithFiles(originalTypes);
         }
         return originalTypes;
@@ -99,17 +144,95 @@
   }
 
   // Override DataTransfer.files
+  // Note: We don't use a placeholder file - just return empty files during drag
+  // Sites should detect file drags via types.includes('Files'), not files.length
+  
   if (originalFilesDescriptor) {
     Object.defineProperty(DataTransfer.prototype, 'files', {
       get() {
         const originalFiles = originalFilesDescriptor.get.call(this);
+        
+        // Check VS Code types directly (in case types getter wasn't called first)
+        if (!window.__vscodeDragActive && originalTypesDescriptor) {
+          const types = originalTypesDescriptor.get.call(this);
+          const typesArray = types ? Array.from(types) : [];
+          if ((typesArray.includes('codeeditors') || typesArray.includes('codefiles')) && !typesArray.includes('Files')) {
+            window.__vscodeDragActive = true;
+          }
+        }
+        
+        // Only return our file when we actually have one (during synthetic drop)
         if (window.__vscodeDragActive && window.__vscodeDragFile) {
           return createFileList(window.__vscodeDragFile);
         }
-        if (window.__vscodeDragActive) {
-          return createFileList(null);
-        }
+        // During drag, return original (empty) files - highlighting uses types check
         return originalFiles;
+      },
+      configurable: true,
+      enumerable: true
+    });
+  }
+
+  /**
+   * Create a fake DataTransferItemList with file items
+   */
+  function createItemsWithFile(originalItems, file) {
+    const fakeItem = {
+      kind: 'file',
+      type: file.type || 'text/plain',
+      getAsFile: () => file,
+      getAsString: () => null,
+      webkitGetAsEntry: () => null
+    };
+    
+    // Build array: original items + our fake file item
+    const itemsArray = originalItems ? Array.from(originalItems) : [];
+    // Only add fake item if there are no file items already
+    const hasFileItem = itemsArray.some(item => item.kind === 'file');
+    if (!hasFileItem) {
+      itemsArray.push(fakeItem);
+    }
+    
+    return new Proxy(itemsArray, {
+      get(target, prop) {
+        if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+          return target[parseInt(prop, 10)];
+        }
+        if (prop === 'length') return target.length;
+        if (prop === Symbol.iterator) {
+          return function* () {
+            for (const item of target) yield item;
+          };
+        }
+        if (prop === 'add') return () => {}; // No-op
+        if (prop === 'remove') return () => {}; // No-op
+        if (prop === 'clear') return () => {}; // No-op
+        return target[prop];
+      }
+    });
+  }
+
+  // Override DataTransfer.items (some sites check items instead of types/files)
+  if (originalItemsDescriptor) {
+    Object.defineProperty(DataTransfer.prototype, 'items', {
+      get() {
+        const originalItems = originalItemsDescriptor.get.call(this);
+        
+        // Check VS Code types directly (in case types getter wasn't called first)
+        if (!window.__vscodeDragActive && originalTypesDescriptor) {
+          const types = originalTypesDescriptor.get.call(this);
+          const typesArray = types ? Array.from(types) : [];
+          if ((typesArray.includes('codeeditors') || typesArray.includes('codefiles')) && !typesArray.includes('Files')) {
+            window.__vscodeDragActive = true;
+          }
+        }
+        
+        // Only return modified items when we have actual file (during synthetic drop)
+        if (window.__vscodeDragActive && window.__vscodeDragFile) {
+          return createItemsWithFile(originalItems, window.__vscodeDragFile);
+        }
+        // During drag, return original items - highlighting uses types check
+        return originalItems;
       },
       configurable: true,
       enumerable: true

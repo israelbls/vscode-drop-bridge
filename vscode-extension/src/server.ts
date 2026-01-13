@@ -136,7 +136,7 @@ function handleRequest(
 
     if (req.method === "GET") {
       if (clipboardFiles.length === 0) {
-        sendJson(res, 200, { files: [] });
+        sendJson(res, 200, { files: [], source: "vscode-drop-bridge" });
         return;
       }
 
@@ -156,11 +156,11 @@ function handleRequest(
           const mimeType = guessMime(clipFile.path);
           files.push({ filename, mime: mimeType, base64, path: clipFile.path });
         } catch (err) {
-           Logger.log(`Failed to read clipboard file: ${clipFile.path}`, err);
+          Logger.log(`Failed to read clipboard file: ${clipFile.path}`, err);
         }
       }
 
-      sendJson(res, 200, { files });
+      sendJson(res, 200, { files, source: "vscode-drop-bridge" });
       return;
     }
 

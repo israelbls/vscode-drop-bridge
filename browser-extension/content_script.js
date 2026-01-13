@@ -98,7 +98,7 @@
         (document.head || document.documentElement).appendChild(script);
         script.remove();
       })
-      .catch(() => {});
+      .catch(() => { });
   }
 
   // Inject as early as possible
@@ -147,7 +147,7 @@
         }
         if (paths.length > 0) return paths;
       }
-    } catch {}
+    } catch { }
 
     // Try file:// URIs and plain paths
     const lines = text.split(/[\r\n]+/);
@@ -242,7 +242,8 @@
   document.addEventListener('dragenter', async (e) => {
     if (!enabled) return;
     const dt = e.dataTransfer;
-    if (!dt || !isVSCodeDrag(dt)) return;
+    const isVS = dt ? isVSCodeDrag(dt) : false;
+    if (!dt || !isVS) return;
 
     log('Detected potential VSCode drag on dragenter');
     if (currentDragPaths.length === 0) {
@@ -287,7 +288,10 @@
     const dt = e.dataTransfer;
     if (!dt) return;
 
-    if (dt.files && dt.files.length > 0 && currentDragPaths.length === 0) return;
+    const types = Array.from(dt.types || []);
+    const isVSCodeDragDrop = types.some(t => t.startsWith('code') || t === 'resourceurls' || t === 'application/vnd.code.uri-list');
+    if (!isVSCodeDragDrop && dt.files && dt.files.length > 0) return;
+    if (isVSCodeDragDrop) e.preventDefault();
 
     if (currentDragPaths.length === 0) {
       const text = dt.getData('text/plain');
@@ -297,7 +301,6 @@
     }
 
     log('Handling drop for paths:', currentDragPaths.length, 'files');
-    e.preventDefault();
 
     const dropPaths = [...currentDragPaths];
     const dropTarget = e.target;
@@ -309,10 +312,21 @@
 
     // Dispatch dragleave to dismiss overlays
     try {
+      // Dispatch on drop target first
+      if (dropTarget && dropTarget !== document.body) {
+        dropTarget.dispatchEvent(new DragEvent('dragleave', {
+          bubbles: true, cancelable: true, relatedTarget: null
+        }));
+      }
+      // Then on document.body
       document.body.dispatchEvent(new DragEvent('dragleave', {
         bubbles: true, cancelable: true, relatedTarget: null
       }));
-    } catch {}
+      // And dragend to signal complete end of drag operation
+      document.dispatchEvent(new DragEvent('dragend', {
+        bubbles: true, cancelable: true
+      }));
+    } catch { }
 
     try {
       const filePromises = dropPaths.map(path => fetchFile(path));
@@ -358,6 +372,41 @@
     }
   }, true);
 
+  /**
+   * Check if clipboard text looks like VS Code file data
+   * Supports: JSON with resources, plain file paths (Windows/Unix)
+   */
+  function isVSCodeClipboardData(text) {
+    if (!text) return false;
+
+    // Check for JSON format with resources
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.some(item =>
+          item.resource &&
+          (item.resource.$mid !== undefined || item.resource.scheme === 'file')
+        );
+      }
+    } catch {
+      // Not JSON - check for plain file paths
+    }
+
+    // Check for plain file paths (Windows or Unix)
+    const lines = text.split(/[\r\n]+/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      // Windows path: C:\... or D:\...
+      if (/^[A-Za-z]:[\\/]/.test(trimmed)) return true;
+      // Unix path: /...
+      if (/^\/[^\/]/.test(trimmed)) return true;
+      // file:// URI
+      if (trimmed.startsWith('file://')) return true;
+    }
+
+    return false;
+  }
+
   // Handle paste events
   document.addEventListener('paste', async (e) => {
     if (!enabled) return;
@@ -365,11 +414,25 @@
     const clipboardData = e.clipboardData;
     if (clipboardData && clipboardData.files && clipboardData.files.length > 0) return;
 
-    const originalText = clipboardData?.getData('text/plain') || '';
-    
-    // Prevent default immediately to stop text from being pasted
-    e.preventDefault();
-    e.stopPropagation();
+    const clipboardText = clipboardData?.getData('text/plain') || '';
+    const hasMarker = clipboardText.startsWith('vscode-drop-bridge:');
+    const hasVSCodeFormat = isVSCodeClipboardData(clipboardText);
+    const isEmptyClipboard = clipboardText === '';
+
+    // Intercept if: has marker, has VSCode JSON format, OR clipboard is empty (server might have files from native copy)
+    if (!hasMarker && !hasVSCodeFormat && !isEmptyClipboard) {
+      return; // Has text content that's not from VS Code - let normal paste happen
+    }
+
+    log('Detected VS Code clipboard data:', hasMarker ? 'marker' : (hasVSCodeFormat ? 'json format' : 'empty clipboard'));
+
+    // Only preventDefault if we're confident it's from VS Code (has marker or format)
+    // For empty clipboard, we'll check server but not block the paste
+    const shouldPreventDefault = hasMarker || hasVSCodeFormat;
+    if (shouldPreventDefault) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
     try {
       const response = await fetch(`${SERVER_URL}/clipboard`, {
@@ -378,22 +441,20 @@
       });
 
       if (!response.ok) {
-        if (originalText) insertTextAtCursor(originalText);
+        log('Server returned error, clipboard may have expired');
         return;
       }
 
       const data = await response.json();
-      
+
+      // Handle if server has files (source check is optional - older servers may not have it)
       if (data.files && data.files.length > 0) {
         log('Found files in VSCode clipboard:', data.files.length);
         sendToInject('pasteFiles', { files: data.files });
-        fetch(`${SERVER_URL}/clipboard`, { method: 'DELETE' }).catch(() => {});
-      } else {
-        if (originalText) insertTextAtCursor(originalText);
+        fetch(`${SERVER_URL}/clipboard`, { method: 'DELETE' }).catch(() => { });
       }
     } catch (err) {
       log('Clipboard check failed:', err.message);
-      if (originalText) insertTextAtCursor(originalText);
     }
   }, true);
 
@@ -405,9 +466,9 @@
     if (!activeElement) return;
 
     const tagName = activeElement.tagName.toLowerCase();
-    
-    if (tagName === 'textarea' || 
-        (tagName === 'input' && ['text', 'search', 'url', 'email', 'password'].includes(activeElement.type))) {
+
+    if (tagName === 'textarea' ||
+      (tagName === 'input' && ['text', 'search', 'url', 'email', 'password'].includes(activeElement.type))) {
       const start = activeElement.selectionStart || 0;
       const end = activeElement.selectionEnd || 0;
       const value = activeElement.value || '';
@@ -417,7 +478,7 @@
       activeElement.dispatchEvent(new Event('change', { bubbles: true }));
       return;
     }
-    
+
     if (activeElement.isContentEditable || activeElement.contentEditable === 'true') {
       const success = document.execCommand('insertText', false, text);
       if (!success) {
@@ -436,10 +497,10 @@
       activeElement.dispatchEvent(new Event('input', { bubbles: true }));
       return;
     }
-    
+
     const editableChild = activeElement.querySelector('[contenteditable="true"]') ||
-                          activeElement.querySelector('textarea') ||
-                          activeElement.querySelector('input[type="text"]');
+      activeElement.querySelector('textarea') ||
+      activeElement.querySelector('input[type="text"]');
     if (editableChild) {
       editableChild.focus();
       insertTextAtCursor(text);
