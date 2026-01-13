@@ -7,7 +7,7 @@
 **Seamlessly drag and drop or copy-paste files from VSCode to web browsers.**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/israelbls/vscode-drop-bridge/main/docs/demo.gif" alt="Demo" width="600">
+<img width="640" height="400" alt="127 0 0 1_5500_i html (2) (2)" src="https://github.com/user-attachments/assets/c974826a-cbf4-495d-bbd3-c5f16b04b39d" />
 </p>
 
 ## The Problem
