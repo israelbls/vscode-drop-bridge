@@ -12,7 +12,7 @@
 
 ## The Problem
 
-When you drag a file from VSCode's file explorer to a web browser (like Claude, ChatGPT, GitHub, etc.), the browser doesn't recognize it as a file drop — it only receives the file path as text. This is because VSCode (an Electron app) sends drag data differently than the native file explorer.
+When you drag a file from VSCode's file explorer to a web browser (like Claude, ChatGPT, Gemini, or Grok), the browser doesn't recognize it as a file drop — it only receives the file path as text. This is because VSCode (an Electron app) sends drag data differently than the native file explorer.
 
 ## The Solution
 
@@ -29,7 +29,7 @@ VSCode Drop Bridge consists of two extensions that work together:
 - 📋 **Copy & Paste** — Copy files in VSCode, paste them into web upload areas
 - 🔒 **Secure** — Only serves files from your workspace folders
 - ⚡ **Fast** — Local transfers with no cloud dependency
-- 🌐 **Universal** — Works on any website with file upload support
+- 🌐 **AI Chat Support** — Works with ChatGPT, Claude, Gemini, and Grok
 
 ## Installation
 
@@ -148,13 +148,14 @@ Go to the extension options to:
 
 ## Supported Websites
 
-VSCode Drop Bridge works with any website that accepts file uploads, including:
+VSCode Drop Bridge currently supports the following AI assistant websites:
 
-- **AI Assistants:** Claude, ChatGPT, Gemini
-- **Code Platforms:** GitHub, GitLab, Bitbucket
-- **Cloud Storage:** Google Drive, Dropbox, OneDrive
-- **Communication:** Slack, Discord, Gmail
-- **And many more...**
+- **ChatGPT** (chat.openai.com)
+- **Claude** (claude.ai)
+- **Gemini** (gemini.google.com)
+- **Grok** (grok.com)
+
+*More websites may be added in future updates.*
 
 ## Development
 
