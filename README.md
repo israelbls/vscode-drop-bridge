@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-blue?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=Israelbls.vscode-drop-bridge)
-[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-green?logo=google-chrome)](https://chrome.google.com/webstore)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-green?logo=google-chrome)](https://chromewebstore.google.com/detail/vscode-drop-bridge/kagincebnlbiomnbklklgpibdcmiafmd)
 
 **Seamlessly drag and drop or copy-paste files from VSCode to web browsers.**
 

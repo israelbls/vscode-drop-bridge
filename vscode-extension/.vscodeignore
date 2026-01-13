@@ -5,3 +5,5 @@ src/**
 tsconfig.json
 **/*.map
 node_modules/**
+!node_modules/mime-types/**
+!node_modules/mime-db/**

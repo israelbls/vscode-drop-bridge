@@ -50,8 +50,7 @@
       "explorer/context": [
         {
           "command": "vscode-drop-bridge.copyFilesFromExplorer",
-          "group": "5_cutcopypaste@1",
-          "when": "explorerResourceIsFolder || explorerResourceIsFile"
+          "group": "5_cutcopypaste@1"
         }
       ]
     },
