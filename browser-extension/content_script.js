@@ -59,7 +59,7 @@
 
     const checkInjection = (event) => {
       if (event.data?.source === BridgeConstants.MESSAGE_SOURCE.INJECT &&
-          event.data?.type === 'injected') {
+        event.data?.type === 'injected') {
         scriptExecutedConfirmed = true;
         injected = true;
         window.removeEventListener('message', checkInjection);
@@ -282,7 +282,7 @@
     log('Detected VS Code clipboard data:',
       hasMarker ? 'marker' : (hasVSCodeFormat ? 'json format' : 'empty clipboard'));
 
-    const shouldPreventDefault = hasMarker || hasVSCodeFormat;
+    const shouldPreventDefault = hasMarker;
     if (shouldPreventDefault) {
       e.preventDefault();
       e.stopPropagation();
@@ -294,7 +294,7 @@
       if (data.files?.length > 0) {
         log('Found files in VSCode clipboard:', data.files.length);
         sendToInject('pasteFiles', { files: data.files });
-        BridgeApi.clearClipboard().catch(() => {});
+        BridgeApi.clearClipboard().catch(() => { });
       }
     } catch (err) {
       log('Clipboard check failed:', err.message);
