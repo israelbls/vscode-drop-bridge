@@ -2,7 +2,7 @@
   "name": "vscode-drop-bridge",
   "displayName": "VSCode Drop Bridge",
   "description": "Seamlessly drag and drop or copy-paste files from VSCode to web browsers",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "Israelbls",
   "license": "MIT",
   "icon": "icon.png",
