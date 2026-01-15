@@ -6,7 +6,6 @@
 import * as http from "http";
 import * as fs from "fs";
 import * as path from "path";
-import * as vscode from "vscode";
 import * as mime from "mime-types";
 
 import {
@@ -29,7 +28,6 @@ import {
   getClipboardFiles,
   setClipboardFiles,
   clearClipboard,
-  isFileInClipboard,
 } from "./clipboard-state";
 import { Logger } from "./logger";
 
@@ -65,22 +63,16 @@ function sendJson<T>(
 }
 
 /**
- * Validates that a file path is within workspace folders or clipboard.
+ * Validates that a file path exists and is accessible.
  */
 function isFileAccessAllowed(filePath: string): boolean {
-  const workspaceFolders = vscode.workspace.workspaceFolders;
-
-  if (workspaceFolders) {
-    const normalizedPath = path.normalize(filePath).toLowerCase();
-    for (const folder of workspaceFolders) {
-      const folderPath = path.normalize(folder.uri.fsPath).toLowerCase();
-      if (normalizedPath.startsWith(folderPath)) {
-        return true;
-      }
-    }
+  try {
+    // Check if the file exists and is accessible
+    fs.accessSync(filePath, fs.constants.R_OK);
+    return true;
+  } catch {
+    return false;
   }
-
-  return isFileInClipboard(filePath);
 }
 
 /**
@@ -94,10 +86,7 @@ function handleHealthCheck(res: http.ServerResponse): void {
 /**
  * Handles the /file endpoint for retrieving file contents.
  */
-function handleFileRequest(
-  res: http.ServerResponse,
-  url: URL
-): void {
+function handleFileRequest(res: http.ServerResponse, url: URL): void {
   const filePath = url.searchParams.get("path");
 
   if (!filePath) {
@@ -211,8 +200,8 @@ function handleClipboardPost(
       const paths: string[] = Array.isArray(data.paths)
         ? data.paths
         : data.path
-          ? [data.path]
-          : [];
+        ? [data.path]
+        : [];
 
       if (paths.length === 0) {
         sendJson<ErrorResponse>(res, 400, {
@@ -321,7 +310,9 @@ export function startServer(onStatusChange?: StatusCallback): Promise<void> {
     });
 
     server.listen(PORT, "127.0.0.1", () => {
-      Logger.info(`${EXTENSION_NAME} server running on http://127.0.0.1:${PORT}`);
+      Logger.info(
+        `${EXTENSION_NAME} server running on http://127.0.0.1:${PORT}`
+      );
       statusCallback?.(true);
       resolve();
     });
