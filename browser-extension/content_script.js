@@ -273,14 +273,12 @@
     const clipboardText = clipboardData?.getData('text/plain') || '';
     const hasMarker = clipboardText.startsWith(BridgeConstants.CLIPBOARD_MARKER);
     const hasVSCodeFormat = BridgeUtils.isVSCodeClipboardData(clipboardText);
-    const isEmptyClipboard = clipboardText === '';
 
-    if (!hasMarker && !hasVSCodeFormat && !isEmptyClipboard) {
+    if (!hasMarker && !hasVSCodeFormat) {
       return;
     }
 
-    log('Detected VS Code clipboard data:',
-      hasMarker ? 'marker' : (hasVSCodeFormat ? 'json format' : 'empty clipboard'));
+    log('Detected VS Code clipboard data:', hasMarker ? 'marker' : 'json format');
 
     const shouldPreventDefault = hasMarker;
     if (shouldPreventDefault) {
