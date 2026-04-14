@@ -107,7 +107,9 @@ const BridgeUtils = {
       return false;
     }
 
-    // Check for JSON format with resources
+    // Only match VS Code's specific internal JSON format with resource objects.
+    // Plain file paths are intentionally excluded to avoid false positives when
+    // terminal output or other text happens to contain path-like strings.
     try {
       const parsed = JSON.parse(text);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -117,16 +119,7 @@ const BridgeUtils = {
         );
       }
     } catch {
-      // Not JSON - check for plain file paths
-    }
-
-    // Check for plain file paths
-    const lines = text.split(/[\r\n]+/);
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (/^[A-Za-z]:[\\/]/.test(trimmed)) return true;
-      if (/^\/[^\/]/.test(trimmed)) return true;
-      if (trimmed.startsWith('file://')) return true;
+      // Not VS Code JSON format
     }
 
     return false;
