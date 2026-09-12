@@ -1,16 +1,27 @@
 {
   "name": "vscode-drop-bridge-workspace",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Development workspace for VSCode Drop Bridge",
   "scripts": {
     "generate-icons": "node scripts/generate-icons.js",
     "build:vscode": "cd vscode-extension && npm run compile",
     "package:vscode": "cd vscode-extension && npm run package",
-    "package:browser": "cd browser-extension && zip -r ../vscode-drop-bridge-browser.zip ."
+    "package:browser": "mkdir -p dist && cd browser-extension && zip -r ../dist/vscode-drop-bridge-browser-$npm_package_version.zip .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "prepare": "husky",
+    "version": "node scripts/sync-browser-version.js"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.13",
     "archiver": "^7.0.1",
-    "sharp": "^0.33.5"
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
+    "sharp": "^0.35.4"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,jsonc}": "biome check --write"
   }
 }

@@ -323,7 +323,7 @@
   <div class="container">
     <div class="header">
       <div class="logo">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M17.5 0h-9L7 1.5V6H2.5L1 7.5v15.07L2.5 24h12.07L16 22.57V18h4.7l1.3-1.43V4.5L17.5 0zm0 2.12l2.38 2.38H17.5V2.12zm-3 20.38h-12v-15h4.5v4.5l6-6 .007 12.007L14.5 22.5zM16 16.5h-1.5v-9l-6 6V6h7.5v10.5z"/>
         </svg>
       </div>
@@ -335,7 +335,7 @@
     
     <div class="section">
       <div class="section-title">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
         </svg>
         General Settings
@@ -346,7 +346,7 @@
           <div class="setting-label">Enable Extension</div>
           <div class="setting-description">Enable or disable the extension globally</div>
         </div>
-        <label class="toggle">
+        <label class="toggle" aria-label="Enable Extension">
           <input type="checkbox" id="enableToggle" checked>
           <span class="toggle-slider"></span>
         </label>
@@ -357,7 +357,7 @@
           <div class="setting-label">Debug Mode</div>
           <div class="setting-description">Log detailed information to the browser console</div>
         </div>
-        <label class="toggle">
+        <label class="toggle" aria-label="Debug Mode">
           <input type="checkbox" id="debugToggle">
           <span class="toggle-slider"></span>
         </label>
@@ -366,7 +366,7 @@
     
     <div class="section">
       <div class="section-title">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
         </svg>
         Domain Blacklist
@@ -377,7 +377,7 @@
       
       <div class="domain-input-row">
         <input type="text" class="domain-input" id="blacklistInput" placeholder="e.g., example.com">
-        <button class="btn btn-primary" id="addBlacklist">Add</button>
+        <button type="button" class="btn btn-primary" id="addBlacklist">Add</button>
       </div>
       
       <div class="domain-tags" id="blacklistTags">
@@ -387,7 +387,7 @@
     
     <div class="section">
       <div class="section-title">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
         </svg>
         Domain Whitelist
@@ -398,7 +398,7 @@
       
       <div class="domain-input-row">
         <input type="text" class="domain-input" id="whitelistInput" placeholder="e.g., claude.ai">
-        <button class="btn btn-primary" id="addWhitelist">Add</button>
+        <button type="button" class="btn btn-primary" id="addWhitelist">Add</button>
       </div>
       
       <div class="domain-tags" id="whitelistTags">
@@ -408,7 +408,7 @@
     
     <div class="section">
       <div class="section-title">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/>
         </svg>
         Reset Settings
@@ -416,7 +416,7 @@
       <p class="setting-description" style="margin-bottom: 16px;">
         Reset all settings to their default values
       </p>
-      <button class="btn btn-danger" id="resetBtn">Reset to Defaults</button>
+      <button type="button" class="btn btn-danger" id="resetBtn">Reset to Defaults</button>
     </div>
     
     <div class="footer">

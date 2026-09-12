@@ -4,7 +4,7 @@
  */
 
 import { CLIPBOARD_EXPIRY_MS } from "./constants";
-import { ClipboardFile } from "./types";
+import type { ClipboardFile } from "./types";
 
 let clipboardFiles: ClipboardFile[] = [];
 
@@ -13,9 +13,7 @@ let clipboardFiles: ClipboardFile[] = [];
  */
 export function cleanExpiredClipboard(): void {
   const now = Date.now();
-  clipboardFiles = clipboardFiles.filter(
-    (file) => now - file.timestamp < CLIPBOARD_EXPIRY_MS
-  );
+  clipboardFiles = clipboardFiles.filter((file) => now - file.timestamp < CLIPBOARD_EXPIRY_MS);
 }
 
 /**

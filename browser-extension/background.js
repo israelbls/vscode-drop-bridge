@@ -4,7 +4,7 @@
  */
 
 // Constants (service worker doesn't have access to content script globals)
-const SERVER_URL = 'http://127.0.0.1:48369';
+const SERVER_URL = "http://127.0.0.1:48369";
 const HEALTH_CHECK_INTERVAL = 30000;
 const REQUEST_TIMEOUT = 2000;
 
@@ -12,14 +12,15 @@ const REQUEST_TIMEOUT = 2000;
 let serverStatus = {
   running: false,
   lastCheck: 0,
-  version: null
+  version: null,
 };
 
 let debugMode = false;
 
 // Initialize debug mode from storage
-chrome.storage.sync.get(['debugMode'], (result) => {
+chrome.storage.sync.get(["debugMode"], (result) => {
   debugMode = result.debugMode === true;
+  log("Debug mode:", debugMode);
 });
 
 // Monitor debug mode changes
@@ -34,7 +35,7 @@ chrome.storage.onChanged.addListener((changes) => {
  */
 function log(...args) {
   if (debugMode) {
-    console.log('[VSCode Drop Bridge BG]', ...args);
+    console.log("[VSCode Drop Bridge BG]", ...args);
   }
 }
 
@@ -47,8 +48,8 @@ async function checkServerHealth() {
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
     const response = await fetch(`${SERVER_URL}/health`, {
-      method: 'GET',
-      signal: controller.signal
+      method: "GET",
+      signal: controller.signal,
     });
 
     clearTimeout(timeout);
@@ -58,18 +59,18 @@ async function checkServerHealth() {
       serverStatus = {
         running: true,
         lastCheck: Date.now(),
-        version: data.version || '1.0'
+        version: data.version || "1.0",
       };
       return serverStatus;
     }
-  } catch {
-    // Server not running or error
+  } catch (err) {
+    log("Health check failed:", err.message);
   }
 
   serverStatus = {
     running: false,
     lastCheck: Date.now(),
-    version: null
+    version: null,
   };
 
   return serverStatus;
@@ -79,16 +80,13 @@ async function checkServerHealth() {
  * Fetches a file from the local server.
  */
 async function fetchFile(filePath) {
-  const response = await fetch(
-    `${SERVER_URL}/file?path=${encodeURIComponent(filePath)}`,
-    {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    }
-  );
+  const response = await fetch(`${SERVER_URL}/file?path=${encodeURIComponent(filePath)}`, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+  });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await response.json().catch(() => ({ error: "Unknown error" }));
     throw new Error(error.error || `HTTP ${response.status}`);
   }
 
@@ -100,12 +98,12 @@ async function fetchFile(filePath) {
  */
 async function getClipboard() {
   const response = await fetch(`${SERVER_URL}/clipboard`, {
-    method: 'GET',
-    headers: { 'Accept': 'application/json' }
+    method: "GET",
+    headers: { Accept: "application/json" },
   });
 
   if (!response.ok) {
-    throw new Error('Failed to get clipboard');
+    throw new Error("Failed to get clipboard");
   }
 
   return response.json();
@@ -115,23 +113,42 @@ async function getClipboard() {
  * Clears the clipboard on the server.
  */
 async function clearClipboard() {
-  await fetch(`${SERVER_URL}/clipboard`, { method: 'DELETE' });
+  await fetch(`${SERVER_URL}/clipboard`, { method: "DELETE" });
+}
+
+/**
+ * Sets clipboard files on the local server.
+ */
+async function setClipboard(paths) {
+  const response = await fetch(`${SERVER_URL}/clipboard`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paths }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to set clipboard");
+  }
+
+  return response.json();
 }
 
 /**
  * Handles incoming messages from content scripts and popup.
  */
-function handleMessage(message, sender, sendResponse) {
-  if (!message || !message.type) {
+function handleMessage(message, _sender, sendResponse) {
+  log("Message:", message?.type, message);
+
+  if (!message?.type) {
     return false;
   }
 
   switch (message.type) {
-    case 'checkServer':
+    case "checkServer":
       checkServerHealth().then(sendResponse);
       return true;
 
-    case 'getServerStatus':
+    case "getServerStatus":
       // Return cached status if recent
       if (Date.now() - serverStatus.lastCheck < 5000) {
         sendResponse(serverStatus);
@@ -140,39 +157,42 @@ function handleMessage(message, sender, sendResponse) {
       checkServerHealth().then(sendResponse);
       return true;
 
-    case 'fetchFile':
+    case "fetchFile":
       fetchFile(message.path)
-        .then(data => sendResponse({ success: true, data }))
-        .catch(err => sendResponse({ success: false, error: err.message }));
+        .then((data) => sendResponse({ success: true, data }))
+        .catch((err) => sendResponse({ success: false, error: err.message }));
       return true;
 
-    case 'getClipboard':
+    case "getClipboard":
       getClipboard()
-        .then(data => sendResponse({ success: true, data }))
-        .catch(err => sendResponse({ success: false, error: err.message }));
+        .then((data) => sendResponse({ success: true, data }))
+        .catch((err) => sendResponse({ success: false, error: err.message }));
       return true;
 
-    case 'clearClipboard':
+    case "clearClipboard":
       clearClipboard()
         .then(() => sendResponse({ success: true }))
-        .catch(err => sendResponse({ success: false, error: err.message }));
+        .catch((err) => sendResponse({ success: false, error: err.message }));
       return true;
 
-    case 'getSettings':
-      chrome.storage.sync.get(
-        ['enabled', 'debugMode', 'blacklist', 'whitelist'],
-        (result) => {
-          sendResponse({
-            enabled: result.enabled !== false,
-            debugMode: result.debugMode === true,
-            blacklist: result.blacklist || [],
-            whitelist: result.whitelist || []
-          });
-        }
-      );
+    case "setClipboard":
+      setClipboard(message.paths)
+        .then((data) => sendResponse({ success: true, data }))
+        .catch((err) => sendResponse({ success: false, error: err.message }));
       return true;
 
-    case 'setSettings':
+    case "getSettings":
+      chrome.storage.sync.get(["enabled", "debugMode", "blacklist", "whitelist"], (result) => {
+        sendResponse({
+          enabled: result.enabled !== false,
+          debugMode: result.debugMode === true,
+          blacklist: result.blacklist || [],
+          whitelist: result.whitelist || [],
+        });
+      });
+      return true;
+
+    case "setSettings":
       chrome.storage.sync.set(message.settings, () => {
         sendResponse({ success: true });
       });
@@ -194,17 +214,17 @@ setInterval(checkServerHealth, HEALTH_CHECK_INTERVAL);
 
 // Handle extension install/update
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'install') {
+  if (details.reason === "install") {
     chrome.storage.sync.set({
       enabled: true,
       debugMode: false,
       blacklist: [],
-      whitelist: []
+      whitelist: [],
     });
-    log('Extension installed');
-  } else if (details.reason === 'update') {
-    log('Extension updated to', chrome.runtime.getManifest().version);
+    log("Extension installed");
+  } else if (details.reason === "update") {
+    log("Extension updated to", chrome.runtime.getManifest().version);
   }
 });
 
-log('Background service worker started');
+log("Background service worker started");

@@ -2,20 +2,20 @@
  * Popup UI logic for VS Code Drop Bridge.
  */
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // ============================================================================
   // DOM Elements
   // ============================================================================
 
   const elements = {
-    statusDot: document.getElementById('statusDot'),
-    statusLabel: document.getElementById('statusLabel'),
-    statusText: document.getElementById('statusText'),
-    enableToggle: document.getElementById('enableToggle'),
-    debugToggle: document.getElementById('debugToggle'),
-    infoText: document.getElementById('infoText'),
-    version: document.getElementById('version'),
-    settingsLink: document.getElementById('settingsLink')
+    statusDot: document.getElementById("statusDot"),
+    statusLabel: document.getElementById("statusLabel"),
+    statusText: document.getElementById("statusText"),
+    enableToggle: document.getElementById("enableToggle"),
+    debugToggle: document.getElementById("debugToggle"),
+    infoText: document.getElementById("infoText"),
+    version: document.getElementById("version"),
+    settingsLink: document.getElementById("settingsLink"),
   };
 
   // ============================================================================
@@ -36,13 +36,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ============================================================================
 
   async function checkStatus() {
-    updateStatusDisplay('checking');
+    updateStatusDisplay("checking");
 
     try {
-      const status = await sendMessage({ type: 'checkServer' });
-      updateStatusDisplay(status.running ? 'connected' : 'disconnected', status.version);
+      const status = await sendMessage({ type: "checkServer" });
+      updateStatusDisplay(status.running ? "connected" : "disconnected", status.version);
     } catch (err) {
-      updateStatusDisplay('error', null, err.message);
+      updateStatusDisplay("error", null, err.message);
     }
   }
 
@@ -50,30 +50,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { statusDot, statusLabel, statusText, infoText } = elements;
 
     switch (state) {
-      case 'checking':
-        statusLabel.textContent = 'Checking...';
-        statusText.textContent = 'Connecting to VSCode...';
-        statusDot.classList.remove('connected');
+      case "checking":
+        statusLabel.textContent = "Checking...";
+        statusText.textContent = "Connecting to VSCode...";
+        statusDot.classList.remove("connected");
         break;
 
-      case 'connected':
-        statusDot.classList.add('connected');
-        statusLabel.textContent = 'Connected';
-        statusText.textContent = `VSCode server running (v${version || '1.0'})`;
-        infoText.textContent = "Drag files from VSCode's explorer to any website, or copy files and paste them into file upload areas.";
+      case "connected":
+        statusDot.classList.add("connected");
+        statusLabel.textContent = "Connected";
+        statusText.textContent = `VSCode server running (v${version || "1.0"})`;
+        infoText.textContent =
+          "Drag files from VSCode's explorer to any website, or copy files and paste them into file upload areas.";
         break;
 
-      case 'disconnected':
-        statusDot.classList.remove('connected');
-        statusLabel.textContent = 'Disconnected';
-        statusText.textContent = 'VSCode not detected';
-        infoText.textContent = 'Open VSCode with the Drop Bridge extension installed to enable file transfers.';
+      case "disconnected":
+        statusDot.classList.remove("connected");
+        statusLabel.textContent = "Disconnected";
+        statusText.textContent = "VSCode not detected";
+        infoText.textContent =
+          "Open VSCode with the Drop Bridge extension installed to enable file transfers.";
         break;
 
-      case 'error':
-        statusDot.classList.remove('connected');
-        statusLabel.textContent = 'Error';
-        statusText.textContent = errorMessage || 'Unknown error';
+      case "error":
+        statusDot.classList.remove("connected");
+        statusLabel.textContent = "Error";
+        statusText.textContent = errorMessage || "Unknown error";
         break;
     }
   }
@@ -95,13 +97,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function loadSettings() {
-    return sendMessage({ type: 'getSettings' });
+    return sendMessage({ type: "getSettings" });
   }
 
   async function saveSetting(key, value) {
     await sendMessage({
-      type: 'setSettings',
-      settings: { [key]: value }
+      type: "setSettings",
+      settings: { [key]: value },
     });
   }
 
@@ -109,15 +111,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Event Listeners
   // ============================================================================
 
-  elements.enableToggle.addEventListener('change', () => {
-    saveSetting('enabled', elements.enableToggle.checked);
+  elements.enableToggle.addEventListener("change", () => {
+    saveSetting("enabled", elements.enableToggle.checked);
   });
 
-  elements.debugToggle.addEventListener('change', () => {
-    saveSetting('debugMode', elements.debugToggle.checked);
+  elements.debugToggle.addEventListener("change", async () => {
+    const value = elements.debugToggle.checked;
+    await saveSetting("debugMode", value);
   });
 
-  elements.settingsLink.addEventListener('click', (e) => {
+  elements.settingsLink.addEventListener("click", (e) => {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
   });
@@ -125,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Cleanup on popup close
   let statusInterval;
 
-  window.addEventListener('unload', () => {
+  window.addEventListener("unload", () => {
     if (statusInterval) {
       clearInterval(statusInterval);
     }
