@@ -8,9 +8,9 @@ const BridgeApi = {
    * @returns {string} The server base URL
    */
   getServerUrl() {
-    return (typeof BridgeConstants !== 'undefined')
+    return typeof BridgeConstants !== "undefined"
       ? BridgeConstants.SERVER_URL
-      : 'http://127.0.0.1:48369';
+      : "http://127.0.0.1:48369";
   },
 
   /**
@@ -18,9 +18,7 @@ const BridgeApi = {
    * @returns {number} Timeout in milliseconds
    */
   getTimeout() {
-    return (typeof BridgeConstants !== 'undefined')
-      ? BridgeConstants.REQUEST_TIMEOUT
-      : 2000;
+    return typeof BridgeConstants !== "undefined" ? BridgeConstants.REQUEST_TIMEOUT : 2000;
   },
 
   /**
@@ -33,8 +31,8 @@ const BridgeApi = {
       const timeout = setTimeout(() => controller.abort(), this.getTimeout());
 
       const response = await fetch(`${this.getServerUrl()}/health`, {
-        method: 'GET',
-        signal: controller.signal
+        method: "GET",
+        signal: controller.signal,
       });
 
       clearTimeout(timeout);
@@ -43,8 +41,8 @@ const BridgeApi = {
         const data = await response.json();
         return {
           running: true,
-          version: data.version || '1.0',
-          lastCheck: Date.now()
+          version: data.version || "1.0",
+          lastCheck: Date.now(),
         };
       }
     } catch {
@@ -54,7 +52,7 @@ const BridgeApi = {
     return {
       running: false,
       version: null,
-      lastCheck: Date.now()
+      lastCheck: Date.now(),
     };
   },
 
@@ -68,13 +66,13 @@ const BridgeApi = {
     const response = await fetch(
       `${this.getServerUrl()}/file?path=${encodeURIComponent(filePath)}`,
       {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      }
+        method: "GET",
+        headers: { Accept: "application/json" },
+      },
     );
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      const error = await response.json().catch(() => ({ error: "Unknown error" }));
       throw new Error(error.error || `HTTP ${response.status}`);
     }
 
@@ -88,12 +86,12 @@ const BridgeApi = {
    */
   async getClipboard() {
     const response = await fetch(`${this.getServerUrl()}/clipboard`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      method: "GET",
+      headers: { Accept: "application/json" },
     });
 
     if (!response.ok) {
-      throw new Error('Failed to get clipboard');
+      throw new Error("Failed to get clipboard");
     }
 
     return response.json();
@@ -105,7 +103,7 @@ const BridgeApi = {
    */
   async clearClipboard() {
     await fetch(`${this.getServerUrl()}/clipboard`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
   },
 
@@ -116,20 +114,20 @@ const BridgeApi = {
    */
   async setClipboard(paths) {
     const response = await fetch(`${this.getServerUrl()}/clipboard`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paths })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paths }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to set clipboard');
+      throw new Error("Failed to set clipboard");
     }
 
     return response.json();
-  }
+  },
 };
 
 // Make available globally
-if (typeof globalThis !== 'undefined') {
+if (typeof globalThis !== "undefined") {
   globalThis.BridgeApi = BridgeApi;
 }

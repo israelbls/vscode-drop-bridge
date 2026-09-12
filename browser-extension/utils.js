@@ -9,7 +9,7 @@ const BridgeUtils = {
    * @returns {string|null} The filesystem path or null if invalid
    */
   fileUriToPath(uri) {
-    if (!uri.startsWith('file://')) {
+    if (!uri.startsWith("file://")) {
       return null;
     }
 
@@ -35,7 +35,7 @@ const BridgeUtils = {
    * @returns {string[]} Array of extracted file paths
    */
   extractPathsFromDragData(text) {
-    if (!text || typeof text !== 'string') {
+    if (!text || typeof text !== "string") {
       return [];
     }
 
@@ -49,7 +49,8 @@ const BridgeUtils = {
         for (const item of parsed) {
           const resource = item.resource;
           if (resource) {
-            let path = resource.fsPath ||
+            let path =
+              resource.fsPath ||
               resource.path ||
               (resource.external && this.fileUriToPath(resource.external));
 
@@ -76,12 +77,12 @@ const BridgeUtils = {
     for (const line of lines) {
       const trimmed = line.trim();
 
-      if (trimmed.startsWith('file://')) {
+      if (trimmed.startsWith("file://")) {
         const path = this.fileUriToPath(trimmed);
         if (path && !paths.includes(path)) {
           paths.push(path);
         }
-      } else if (/^\/[^\/]/.test(trimmed)) {
+      } else if (/^\/[^/]/.test(trimmed)) {
         // Unix path
         if (!paths.includes(trimmed)) {
           paths.push(trimmed);
@@ -111,9 +112,9 @@ const BridgeUtils = {
     try {
       const parsed = JSON.parse(text);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.some(item =>
-          item.resource &&
-          (item.resource.$mid !== undefined || item.resource.scheme === 'file')
+        return parsed.some(
+          (item) =>
+            item.resource && (item.resource.$mid !== undefined || item.resource.scheme === "file"),
         );
       }
     } catch {
@@ -125,8 +126,8 @@ const BridgeUtils = {
     for (const line of lines) {
       const trimmed = line.trim();
       if (/^[A-Za-z]:[\\/]/.test(trimmed)) return true;
-      if (/^\/[^\/]/.test(trimmed)) return true;
-      if (trimmed.startsWith('file://')) return true;
+      if (/^\/[^/]/.test(trimmed)) return true;
+      if (trimmed.startsWith("file://")) return true;
     }
 
     return false;
@@ -141,11 +142,11 @@ const BridgeUtils = {
     const types = Array.from(dataTransfer.types || []);
 
     // If it already has Files, it's a native file drag
-    if (types.includes('Files')) {
+    if (types.includes("Files")) {
       return false;
     }
 
-    return types.includes('text/plain');
+    return types.includes("text/plain");
   },
 
   /**
@@ -153,13 +154,13 @@ const BridgeUtils = {
    * @param {string} message - The message to display
    */
   showNotification(message) {
-    const existing = document.getElementById('vscode-drop-bridge-notification');
+    const existing = document.getElementById("vscode-drop-bridge-notification");
     if (existing) {
       existing.remove();
     }
 
-    const notification = document.createElement('div');
-    notification.id = 'vscode-drop-bridge-notification';
+    const notification = document.createElement("div");
+    notification.id = "vscode-drop-bridge-notification";
     notification.textContent = message;
     notification.style.cssText = `
       position: fixed;
@@ -179,9 +180,9 @@ const BridgeUtils = {
     `;
 
     // Add animation styles if not already present
-    if (!document.getElementById('vscode-drop-bridge-styles')) {
-      const style = document.createElement('style');
-      style.id = 'vscode-drop-bridge-styles';
+    if (!document.getElementById("vscode-drop-bridge-styles")) {
+      const style = document.createElement("style");
+      style.id = "vscode-drop-bridge-styles";
       style.textContent = `
         @keyframes vscode-drop-bridge-fade-in {
           from { opacity: 0; transform: translateY(10px); }
@@ -197,18 +198,17 @@ const BridgeUtils = {
 
     document.body.appendChild(notification);
 
-    const duration = (typeof BridgeConstants !== 'undefined')
-      ? BridgeConstants.NOTIFICATION_DURATION
-      : 4000;
+    const duration =
+      typeof BridgeConstants !== "undefined" ? BridgeConstants.NOTIFICATION_DURATION : 4000;
 
     setTimeout(() => {
-      notification.style.animation = 'vscode-drop-bridge-fade-out 0.2s ease-out forwards';
+      notification.style.animation = "vscode-drop-bridge-fade-out 0.2s ease-out forwards";
       setTimeout(() => notification.remove(), 200);
     }, duration);
-  }
+  },
 };
 
 // Make available globally
-if (typeof globalThis !== 'undefined') {
+if (typeof globalThis !== "undefined") {
   globalThis.BridgeUtils = BridgeUtils;
 }

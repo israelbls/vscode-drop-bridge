@@ -4,23 +4,33 @@
  * Enables drop zones to recognize VS Code drags as file drags.
  */
 
-(function () {
-  'use strict';
-
+(() => {
   // ============================================================================
   // Constants
   // ============================================================================
 
   const MESSAGE_SOURCE = {
-    CONTENT: 'vscode-drop-bridge-content',
-    INJECT: 'vscode-drop-bridge-inject'
+    CONTENT: "vscode-drop-bridge-content",
+    INJECT: "vscode-drop-bridge-inject",
   };
 
   const TEXT_MIME_TYPES = [
-    'text/plain', 'text/markdown', 'text/x-python', 'text/javascript',
-    'application/javascript', 'text/typescript', 'application/typescript',
-    'text/html', 'text/css', 'text/csv', 'application/json', 'text/xml',
-    'application/xml', 'text/yaml', 'text/x-c', 'text/x-c++src'
+    "text/plain",
+    "text/markdown",
+    "text/x-python",
+    "text/javascript",
+    "application/javascript",
+    "text/typescript",
+    "application/typescript",
+    "text/html",
+    "text/css",
+    "text/csv",
+    "application/json",
+    "text/xml",
+    "application/xml",
+    "text/yaml",
+    "text/x-c",
+    "text/x-c++src",
   ];
 
   const NOTIFICATION_DURATION = 4000;
@@ -47,75 +57,91 @@
    */
   function hasVSCodeDragTypes(dataTransfer) {
     const types = Array.from(dataTransfer.types || []);
-    if (types.includes('Files')) return false;
-    if (!types.includes('text/plain')) return false;
-    return types.includes('codeeditors') ||
-           types.includes('codefiles') ||
-           types.includes('application/vnd.code.uri-list');
+    if (types.includes("Files")) return false;
+    if (!types.includes("text/plain")) return false;
+    return (
+      types.includes("codeeditors") ||
+      types.includes("codefiles") ||
+      types.includes("application/vnd.code.uri-list")
+    );
   }
 
   // Direct drag detection in page context (runs before async message handling)
-  document.addEventListener('dragenter', function (e) {
-    if (e.dataTransfer && hasVSCodeDragTypes(e.dataTransfer)) {
-      window.__vscodeDragActive = true;
-      window.__vscodeDragDetectedAt = Date.now();
-    }
-  }, true);
+  document.addEventListener(
+    "dragenter",
+    (e) => {
+      if (e.dataTransfer && hasVSCodeDragTypes(e.dataTransfer)) {
+        window.__vscodeDragActive = true;
+        window.__vscodeDragDetectedAt = Date.now();
+      }
+    },
+    true,
+  );
 
-  document.addEventListener('dragend', function () {
-    window.__vscodeDragActive = false;
-    window.__vscodeDragFile = null;
-    window.__vscodeDragPath = null;
-  }, true);
-
-  document.addEventListener('drop', function (e) {
-    // Reset on native drop so sites don't see placeholder file
-    if (!e.__vscodeBridgeSynthetic) {
+  document.addEventListener(
+    "dragend",
+    () => {
       window.__vscodeDragActive = false;
       window.__vscodeDragFile = null;
       window.__vscodeDragPath = null;
-    }
-  }, true);
+    },
+    true,
+  );
+
+  document.addEventListener(
+    "drop",
+    (e) => {
+      // Reset on native drop so sites don't see placeholder file
+      if (!e.__vscodeBridgeSynthetic) {
+        window.__vscodeDragActive = false;
+        window.__vscodeDragFile = null;
+        window.__vscodeDragPath = null;
+      }
+    },
+    true,
+  );
 
   // ============================================================================
   // DataTransfer Prototype Overrides
   // ============================================================================
 
-  const originalTypesDescriptor = Object.getOwnPropertyDescriptor(DataTransfer.prototype, 'types');
-  const originalFilesDescriptor = Object.getOwnPropertyDescriptor(DataTransfer.prototype, 'files');
-  const originalItemsDescriptor = Object.getOwnPropertyDescriptor(DataTransfer.prototype, 'items');
+  const originalTypesDescriptor = Object.getOwnPropertyDescriptor(DataTransfer.prototype, "types");
+  const originalFilesDescriptor = Object.getOwnPropertyDescriptor(DataTransfer.prototype, "files");
+  const originalItemsDescriptor = Object.getOwnPropertyDescriptor(DataTransfer.prototype, "items");
 
   /**
    * Creates a proxy that mimics DOMStringList with 'Files' added.
    */
   function createTypesWithFiles(originalTypes) {
     const typesArray = originalTypes ? Array.from(originalTypes) : [];
-    if (!typesArray.includes('Files')) {
-      typesArray.push('Files');
+    if (!typesArray.includes("Files")) {
+      typesArray.push("Files");
     }
 
     return new Proxy(typesArray, {
       get(target, prop) {
-        if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+        if (typeof prop === "string" && /^\d+$/.test(prop)) {
           return target[parseInt(prop, 10)];
         }
-        if (prop === 'length') return target.length;
-        if (prop === 'contains') return (value) => target.includes(value);
-        if (prop === 'includes') return (value) => target.includes(value);
-        if (prop === 'item') return (index) => target[index] || null;
-        if (prop === 'indexOf') return (value) => target.indexOf(value);
-        if (prop === 'forEach') return (callback, thisArg) => target.forEach(callback, thisArg);
+        if (prop === "length") return target.length;
+        if (prop === "contains") return (value) => target.includes(value);
+        if (prop === "includes") return (value) => target.includes(value);
+        if (prop === "item") return (index) => target[index] || null;
+        if (prop === "indexOf") return (value) => target.indexOf(value);
+        if (prop === "forEach") return (callback, thisArg) => target.forEach(callback, thisArg);
         if (prop === Symbol.iterator) {
-          return function* () { for (const item of target) yield item; };
+          return function* () {
+            for (const item of target) yield item;
+          };
         }
         return target[prop];
       },
       has(target, prop) {
-        if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+        if (typeof prop === "string" && /^\d+$/.test(prop)) {
           return parseInt(prop, 10) < target.length;
         }
-        return prop in target || ['contains', 'includes', 'item', 'length'].includes(prop);
-      }
+        return prop in target || ["contains", "includes", "item", "length"].includes(prop);
+      },
     });
   }
 
@@ -126,16 +152,18 @@
     const files = file ? [file] : [];
     return new Proxy(files, {
       get(target, prop) {
-        if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+        if (typeof prop === "string" && /^\d+$/.test(prop)) {
           return target[parseInt(prop, 10)];
         }
-        if (prop === 'length') return target.length;
-        if (prop === 'item') return (index) => target[index] || null;
+        if (prop === "length") return target.length;
+        if (prop === "item") return (index) => target[index] || null;
         if (prop === Symbol.iterator) {
-          return function* () { for (const item of target) yield item; };
+          return function* () {
+            for (const item of target) yield item;
+          };
         }
         return target[prop];
-      }
+      },
     });
   }
 
@@ -144,33 +172,35 @@
    */
   function createItemsWithFile(originalItems, file) {
     const fakeItem = {
-      kind: 'file',
-      type: file.type || 'text/plain',
+      kind: "file",
+      type: file.type || "text/plain",
       getAsFile: () => file,
       getAsString: () => null,
-      webkitGetAsEntry: () => null
+      webkitGetAsEntry: () => null,
     };
 
     const itemsArray = originalItems ? Array.from(originalItems) : [];
-    const hasFileItem = itemsArray.some(item => item.kind === 'file');
+    const hasFileItem = itemsArray.some((item) => item.kind === "file");
     if (!hasFileItem) {
       itemsArray.push(fakeItem);
     }
 
     return new Proxy(itemsArray, {
       get(target, prop) {
-        if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+        if (typeof prop === "string" && /^\d+$/.test(prop)) {
           return target[parseInt(prop, 10)];
         }
-        if (prop === 'length') return target.length;
-        if (prop === 'add') return () => {};
-        if (prop === 'remove') return () => {};
-        if (prop === 'clear') return () => {};
+        if (prop === "length") return target.length;
+        if (prop === "add") return () => {};
+        if (prop === "remove") return () => {};
+        if (prop === "clear") return () => {};
         if (prop === Symbol.iterator) {
-          return function* () { for (const item of target) yield item; };
+          return function* () {
+            for (const item of target) yield item;
+          };
         }
         return target[prop];
-      }
+      },
     });
   }
 
@@ -181,8 +211,10 @@
     if (!window.__vscodeDragActive && originalTypesDescriptor) {
       const types = originalTypesDescriptor.get.call(dataTransfer);
       const typesArray = types ? Array.from(types) : [];
-      if ((typesArray.includes('codeeditors') || typesArray.includes('codefiles')) &&
-          !typesArray.includes('Files')) {
+      if (
+        (typesArray.includes("codeeditors") || typesArray.includes("codefiles")) &&
+        !typesArray.includes("Files")
+      ) {
         window.__vscodeDragActive = true;
       }
     }
@@ -190,13 +222,14 @@
 
   // Override DataTransfer.types
   if (originalTypesDescriptor) {
-    Object.defineProperty(DataTransfer.prototype, 'types', {
+    Object.defineProperty(DataTransfer.prototype, "types", {
       get() {
         const originalTypes = originalTypesDescriptor.get.call(this);
         const typesArray = originalTypes ? Array.from(originalTypes) : [];
 
-        const hasVSCodeTypes = typesArray.includes('codeeditors') || typesArray.includes('codefiles');
-        const alreadyHasFiles = typesArray.includes('Files');
+        const hasVSCodeTypes =
+          typesArray.includes("codeeditors") || typesArray.includes("codefiles");
+        const alreadyHasFiles = typesArray.includes("Files");
 
         if (hasVSCodeTypes && !alreadyHasFiles) {
           window.__vscodeDragActive = true;
@@ -205,13 +238,13 @@
         return originalTypes;
       },
       configurable: true,
-      enumerable: true
+      enumerable: true,
     });
   }
 
   // Override DataTransfer.files
   if (originalFilesDescriptor) {
-    Object.defineProperty(DataTransfer.prototype, 'files', {
+    Object.defineProperty(DataTransfer.prototype, "files", {
       get() {
         const originalFiles = originalFilesDescriptor.get.call(this);
         checkAndSetVSCodeDragFlag(this);
@@ -222,13 +255,13 @@
         return originalFiles;
       },
       configurable: true,
-      enumerable: true
+      enumerable: true,
     });
   }
 
   // Override DataTransfer.items
   if (originalItemsDescriptor) {
-    Object.defineProperty(DataTransfer.prototype, 'items', {
+    Object.defineProperty(DataTransfer.prototype, "items", {
       get() {
         const originalItems = originalItemsDescriptor.get.call(this);
         checkAndSetVSCodeDragFlag(this);
@@ -239,7 +272,7 @@
         return originalItems;
       },
       configurable: true,
-      enumerable: true
+      enumerable: true,
     });
   }
 
@@ -251,8 +284,8 @@
    * Gets effective MIME type (empty for text files on ChatGPT).
    */
   function getEffectiveMime(mime) {
-    if (window.location.hostname.includes('chatgpt.com') && TEXT_MIME_TYPES.includes(mime)) {
-      return '';
+    if (window.location.hostname.includes("chatgpt.com") && TEXT_MIME_TYPES.includes(mime)) {
+      return "";
     }
     return mime;
   }
@@ -268,7 +301,7 @@
     }
     return new File([bytes], fileData.filename, {
       type: getEffectiveMime(fileData.mime),
-      lastModified: Date.now()
+      lastModified: Date.now(),
     });
   }
 
@@ -283,9 +316,9 @@
     const fileInputs = document.querySelectorAll('input[type="file"]');
     if (fileInputs.length === 0) return null;
 
-    if (window.location.hostname.includes('chatgpt.com')) {
+    if (window.location.hostname.includes("chatgpt.com")) {
       for (const input of fileInputs) {
-        if (input.id === 'upload-camera' || input.accept?.startsWith('image/')) {
+        if (input.id === "upload-camera" || input.accept?.startsWith("image/")) {
           continue;
         }
         return input;
@@ -300,10 +333,12 @@
    */
   function setFilesOnInput(fileInput, files) {
     const dt = new DataTransfer();
-    files.forEach(f => dt.items.add(f));
+    files.forEach((f) => {
+      dt.items.add(f);
+    });
     fileInput.files = dt.files;
-    fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-    fileInput.dispatchEvent(new Event('input', { bubbles: true }));
+    fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    fileInput.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
   /**
@@ -311,7 +346,7 @@
    */
   function findMainInput() {
     const inputs = document.querySelectorAll(
-      'textarea:not([readonly]):not([disabled]), [contenteditable="true"]'
+      'textarea:not([readonly]):not([disabled]), [contenteditable="true"]',
     );
     return inputs[inputs.length - 1] || document.body;
   }
@@ -328,21 +363,36 @@
     const dispatchTarget = targetElement || document;
 
     const dt = new DataTransfer();
-    files.forEach(f => dt.items.add(f));
+    files.forEach((f) => {
+      dt.items.add(f);
+    });
 
-    dispatchTarget.dispatchEvent(new DragEvent('dragenter', {
-      bubbles: true, cancelable: true, dataTransfer: dt,
-      clientX: targetX, clientY: targetY
-    }));
+    dispatchTarget.dispatchEvent(
+      new DragEvent("dragenter", {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: dt,
+        clientX: targetX,
+        clientY: targetY,
+      }),
+    );
 
-    dispatchTarget.dispatchEvent(new DragEvent('dragover', {
-      bubbles: true, cancelable: true, dataTransfer: dt,
-      clientX: targetX, clientY: targetY
-    }));
+    dispatchTarget.dispatchEvent(
+      new DragEvent("dragover", {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: dt,
+        clientX: targetX,
+        clientY: targetY,
+      }),
+    );
 
-    const dropEvent = new DragEvent('drop', {
-      bubbles: true, cancelable: true, dataTransfer: dt,
-      clientX: targetX, clientY: targetY
+    const dropEvent = new DragEvent("drop", {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer: dt,
+      clientX: targetX,
+      clientY: targetY,
     });
     dropEvent.__vscodeBridgeSynthetic = true;
 
@@ -353,7 +403,7 @@
       return dispatchPasteFallback(files);
     }
 
-    return 'elementDrop';
+    return "elementDrop";
   }
 
   /**
@@ -361,19 +411,25 @@
    */
   function dispatchPasteFallback(files) {
     const clipboardData = new DataTransfer();
-    files.forEach(f => clipboardData.items.add(f));
-
-    const pasteEvent = new ClipboardEvent('paste', {
-      bubbles: true, cancelable: true, clipboardData: clipboardData
+    files.forEach((f) => {
+      clipboardData.items.add(f);
     });
-    Object.defineProperty(pasteEvent, 'clipboardData', {
-      get() { return clipboardData; }
+
+    const pasteEvent = new ClipboardEvent("paste", {
+      bubbles: true,
+      cancelable: true,
+      clipboardData: clipboardData,
+    });
+    Object.defineProperty(pasteEvent, "clipboardData", {
+      get() {
+        return clipboardData;
+      },
     });
 
     const pasteTarget = findMainInput();
     pasteTarget.focus();
     pasteTarget.dispatchEvent(pasteEvent);
-    return 'fallbackPaste';
+    return "fallbackPaste";
   }
 
   // ============================================================================
@@ -383,12 +439,12 @@
   /**
    * Shows a notification toast (needed in page context, can't use shared utils).
    */
-  function showNotification(message) {
-    const existing = document.getElementById('vscode-drop-bridge-notification');
+  function _showNotification(message) {
+    const existing = document.getElementById("vscode-drop-bridge-notification");
     if (existing) existing.remove();
 
-    const notification = document.createElement('div');
-    notification.id = 'vscode-drop-bridge-notification';
+    const notification = document.createElement("div");
+    notification.id = "vscode-drop-bridge-notification";
     notification.textContent = message;
     notification.style.cssText = `
       position: fixed;
@@ -407,9 +463,9 @@
       animation: vscode-drop-bridge-fade-in 0.2s ease-out;
     `;
 
-    if (!document.getElementById('vscode-drop-bridge-styles')) {
-      const style = document.createElement('style');
-      style.id = 'vscode-drop-bridge-styles';
+    if (!document.getElementById("vscode-drop-bridge-styles")) {
+      const style = document.createElement("style");
+      style.id = "vscode-drop-bridge-styles";
       style.textContent = `
         @keyframes vscode-drop-bridge-fade-in {
           from { opacity: 0; transform: translateY(10px); }
@@ -426,7 +482,7 @@
     document.body.appendChild(notification);
 
     setTimeout(() => {
-      notification.style.animation = 'vscode-drop-bridge-fade-out 0.2s ease-out forwards';
+      notification.style.animation = "vscode-drop-bridge-fade-out 0.2s ease-out forwards";
       setTimeout(() => notification.remove(), 200);
     }, NOTIFICATION_DURATION);
   }
@@ -445,15 +501,15 @@
 
       if (fileInput) {
         setFilesOnInput(fileInput, files);
-        sendResponse('pasteComplete', true, 'fileInput', files.length);
+        sendResponse("pasteComplete", true, "fileInput", files.length);
         return;
       }
 
       dispatchPasteFallback(files);
-      sendResponse('pasteComplete', true, 'pasteEvent', files.length);
+      sendResponse("pasteComplete", true, "pasteEvent", files.length);
     } catch (err) {
-      console.error('VSCode Drop Bridge: Failed to paste files:', err);
-      sendResponse('pasteComplete', false, null, 0, err.message);
+      console.error("VSCode Drop Bridge: Failed to paste files:", err);
+      sendResponse("pasteComplete", false, null, 0, err.message);
     }
   }
 
@@ -467,15 +523,15 @@
 
       if (fileInput) {
         setFilesOnInput(fileInput, files);
-        sendResponse('dropComplete', true, 'fileInput', files.length);
+        sendResponse("dropComplete", true, "fileInput", files.length);
         return;
       }
 
       const method = dispatchSyntheticDrop(files, target.x, target.y);
-      sendResponse('dropComplete', true, method, files.length);
+      sendResponse("dropComplete", true, method, files.length);
     } catch (err) {
-      console.error('VSCode Drop Bridge: Failed to drop files:', err);
-      sendResponse('dropComplete', false, null, 0, err.message);
+      console.error("VSCode Drop Bridge: Failed to drop files:", err);
+      sendResponse("dropComplete", false, null, 0, err.message);
     }
   }
 
@@ -483,53 +539,56 @@
    * Sends a response message to content script.
    */
   function sendResponse(type, success, method, count, error) {
-    window.postMessage({
-      source: MESSAGE_SOURCE.INJECT,
-      type,
-      success,
-      method,
-      count,
-      error
-    }, '*');
+    window.postMessage(
+      {
+        source: MESSAGE_SOURCE.INJECT,
+        type,
+        success,
+        method,
+        count,
+        error,
+      },
+      "*",
+    );
   }
 
   // Listen for messages from content script
-  window.addEventListener('message', function (event) {
+  window.addEventListener("message", (event) => {
     if (event.source !== window) return;
 
     const data = event.data;
     if (!data || data.source !== MESSAGE_SOURCE.CONTENT) return;
 
     switch (data.type) {
-      case 'dragStart':
+      case "dragStart":
         window.__vscodeDragActive = true;
         window.__vscodeDragPath = data.path;
         window.__vscodeDragFile = null;
         break;
 
-      case 'dragEnd':
+      case "dragEnd":
         window.__vscodeDragActive = false;
         window.__vscodeDragPath = null;
         window.__vscodeDragFile = null;
         break;
 
-      case 'fileReady':
+      case "fileReady":
         if (data.file) {
           try {
             window.__vscodeDragFile = createFileFromData(data.file);
           } catch (err) {
-            console.error('VSCode Drop Bridge: Failed to create file:', err);
+            console.error("VSCode Drop Bridge: Failed to create file:", err);
           }
         }
         break;
 
-      case 'pasteFiles':
+      case "pasteFiles":
         if (data.files?.length > 0) {
           handlePasteFiles(data.files);
         }
         break;
 
-      case 'dropFiles':
+      case "dropFiles":
         if (data.files?.length > 0 && data.target) {
           handleDropFiles(data.files, data.target);
         }
@@ -542,8 +601,11 @@
   // ============================================================================
 
   // Notify content script that injection is complete
-  window.postMessage({
-    source: MESSAGE_SOURCE.INJECT,
-    type: 'injected'
-  }, '*');
+  window.postMessage(
+    {
+      source: MESSAGE_SOURCE.INJECT,
+      type: "injected",
+    },
+    "*",
+  );
 })();
