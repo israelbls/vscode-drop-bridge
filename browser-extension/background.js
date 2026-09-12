@@ -136,7 +136,7 @@ async function setClipboard(paths) {
 /**
  * Handles incoming messages from content scripts and popup.
  */
-function handleMessage(message, sendResponse) {
+function handleMessage(message, _sender, sendResponse) {
   log("Message:", message?.type, message);
 
   if (!message?.type) {
