@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "VSCode Drop Bridge",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Seamlessly drag and drop or copy-paste files from VSCode to web browsers. Works with ChatGPT, Claude, Grok, and Gemini.",
   "icons": {
     "16": "icons/icon16.png",
