@@ -64,8 +64,10 @@
   function hasVSCodeDragTypes(dataTransfer) {
     const types = Array.from(dataTransfer.types || []);
     if (types.includes("Files")) return false;
-    if (!types.includes("text/plain")) return false;
     return (
+      types.includes("text/plain") ||
+      types.includes("text/uri-list") ||
+      types.includes("text/x-moz-url") ||
       types.includes("codeeditors") ||
       types.includes("codefiles") ||
       types.includes("application/vnd.code.uri-list")
@@ -217,10 +219,7 @@
     if (!window.__vscodeDragActive && originalTypesDescriptor) {
       const types = originalTypesDescriptor.get.call(dataTransfer);
       const typesArray = types ? Array.from(types) : [];
-      if (
-        (typesArray.includes("codeeditors") || typesArray.includes("codefiles")) &&
-        !typesArray.includes("Files")
-      ) {
+      if (hasVSCodeDragTypes({ types: typesArray }) && !typesArray.includes("Files")) {
         window.__vscodeDragActive = true;
       }
     }
@@ -233,8 +232,7 @@
         const originalTypes = originalTypesDescriptor.get.call(this);
         const typesArray = originalTypes ? Array.from(originalTypes) : [];
 
-        const hasVSCodeTypes =
-          typesArray.includes("codeeditors") || typesArray.includes("codefiles");
+        const hasVSCodeTypes = hasVSCodeDragTypes({ types: typesArray });
         const alreadyHasFiles = typesArray.includes("Files");
 
         if (hasVSCodeTypes && !alreadyHasFiles) {

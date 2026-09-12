@@ -184,7 +184,10 @@
 
       if (currentDragPaths.length === 0) {
         for (const item of dt.items) {
-          if (item.kind === "string" && item.type === "text/plain") {
+          if (
+            item.kind === "string" &&
+            ["text/plain", "text/uri-list", "text/x-moz-url"].includes(item.type)
+          ) {
             log("Reading text/plain from drag DataTransfer");
             item.getAsString((text) => {
               const paths = BridgeUtils.extractPathsFromDragData(text);
@@ -226,7 +229,11 @@
       const types = Array.from(dt.types || []);
       const isVSCodeDragDrop = types.some(
         (t) =>
-          t.startsWith("code") || t === "resourceurls" || t === "application/vnd.code.uri-list",
+          t.startsWith("code") ||
+          t === "resourceurls" ||
+          t === "application/vnd.code.uri-list" ||
+          t === "text/uri-list" ||
+          t === "text/x-moz-url",
       );
 
       log("drop:", {
@@ -249,7 +256,8 @@
 
       if (currentDragPaths.length === 0) {
         log("No paths captured during dragover; attempting text/plain fallback on drop");
-        const text = dt.getData("text/plain");
+        const text =
+          dt.getData("text/plain") || dt.getData("text/uri-list") || dt.getData("text/x-moz-url");
         log("Drop text/plain length:", text.length);
         const paths = BridgeUtils.extractPathsFromDragData(text);
         log("Drop fallback extracted paths:", paths.length);

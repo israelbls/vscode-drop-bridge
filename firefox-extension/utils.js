@@ -9,7 +9,7 @@ const BridgeUtils = {
    * @returns {string|null} The filesystem path or null if invalid
    */
   fileUriToPath(uri) {
-    if (!uri.startsWith("file://")) {
+    if (!uri.startsWith("file://") && !uri.startsWith("vscode-remote://")) {
       return null;
     }
 
@@ -77,7 +77,7 @@ const BridgeUtils = {
     for (const line of lines) {
       const trimmed = line.trim();
 
-      if (trimmed.startsWith("file://")) {
+      if (trimmed.startsWith("file://") || trimmed.startsWith("vscode-remote://")) {
         const path = this.fileUriToPath(trimmed);
         if (path && !paths.includes(path)) {
           paths.push(path);
@@ -146,7 +146,11 @@ const BridgeUtils = {
       return false;
     }
 
-    return types.includes("text/plain");
+    return (
+      types.includes("text/plain") ||
+      types.includes("text/uri-list") ||
+      types.includes("text/x-moz-url")
+    );
   },
 
   /**
