@@ -7,7 +7,7 @@
     "generate-icons": "node scripts/generate-icons.js",
     "build:vscode": "cd vscode-extension && npm run compile",
     "package:vscode": "cd vscode-extension && npm run package",
-    "package:browser": "cd browser-extension && zip -r ../vscode-drop-bridge-browser.zip .",
+    "package:browser": "mkdir -p dist && cd browser-extension && zip -r ../dist/vscode-drop-bridge-browser.zip .",
     "format": "biome format --write .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
