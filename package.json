@@ -7,11 +7,20 @@
     "generate-icons": "node scripts/generate-icons.js",
     "build:vscode": "cd vscode-extension && npm run compile",
     "package:vscode": "cd vscode-extension && npm run package",
-    "package:browser": "cd browser-extension && zip -r ../vscode-drop-bridge-browser.zip ."
+    "package:browser": "cd browser-extension && zip -r ../vscode-drop-bridge-browser.zip .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
     "archiver": "^7.0.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
     "sharp": "^0.35.4"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,jsonc}": "biome check --write"
   }
 }
