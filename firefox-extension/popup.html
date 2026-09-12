@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VSCode Drop Bridge</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      width: 320px;
+      background: #1e1e1e;
+      color: #cccccc;
+    }
+    
+    .container {
+      padding: 16px;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #007acc 0%, #0098ff 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .logo svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+    
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    
+    .status-card {
+      background: #252526;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .status-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f44336;
+      transition: background 0.3s ease;
+    }
+    
+    .status-dot.connected {
+      background: #4caf50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+    }
+    
+    .status-text {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+    
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+    
+    .toggle-label {
+      font-size: 14px;
+    }
+    
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+    
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #555;
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+    
+    .toggle input:checked + .toggle-slider {
+      background-color: #007acc;
+    }
+    
+    .toggle input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+    
+    .divider {
+      height: 1px;
+      background: #333;
+      margin: 12px 0;
+    }
+    
+    .settings-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #252526;
+      border-radius: 6px;
+      color: #cccccc;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.2s ease;
+    }
+    
+    .settings-link:hover {
+      background: #333;
+    }
+    
+    .settings-link svg {
+      width: 16px;
+      height: 16px;
+      fill: #888;
+    }
+
+    .primary-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 12px;
+      background: #007acc;
+      border-radius: 6px;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.2s ease;
+      margin-bottom: 10px;
+    }
+
+    .primary-button:hover {
+      background: #0098ff;
+    }
+
+    .note-text {
+      font-size: 12px;
+      color: #bbb;
+      line-height: 1.5;
+      padding: 8px;
+      background: #252526;
+      border-radius: 6px;
+      border-left: 3px solid #007acc;
+      margin-bottom: 12px;
+    }
+    
+    .info-text {
+      font-size: 12px;
+      color: #888;
+      line-height: 1.5;
+      margin-top: 12px;
+      padding: 8px;
+      background: #252526;
+      border-radius: 6px;
+      border-left: 3px solid #007acc;
+    }
+    
+    .version {
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M17.5 0h-9L7 1.5V6H2.5L1 7.5v15.07L2.5 24h12.07L16 22.57V18h4.7l1.3-1.43V4.5L17.5 0zm0 2.12l2.38 2.38H17.5V2.12zm-3 20.38h-12v-15h4.5v4.5l6-6 .007 12.007L14.5 22.5zM16 16.5h-1.5v-9l-6 6V6h7.5v10.5z"/>
+        </svg>
+      </div>
+      <span class="title">VSCode Drop Bridge</span>
+    </div>
+    
+    <div class="status-card">
+      <div class="status-row">
+        <div class="status-label">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusLabel">Checking...</span>
+        </div>
+      </div>
+      <div class="status-text" id="statusText">Connecting to VSCode...</div>
+    </div>
+    
+    <div class="toggle-row">
+      <span class="toggle-label">Enable Extension</span>
+      <label class="toggle" aria-label="Enable Extension">
+        <input type="checkbox" id="enableToggle" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    
+    <div class="toggle-row">
+      <span class="toggle-label">Debug Mode</span>
+      <label class="toggle" aria-label="Debug Mode">
+        <input type="checkbox" id="debugToggle">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    
+    <div class="divider"></div>
+
+    <a
+      class="primary-button"
+      href="https://marketplace.visualstudio.com/items?itemName=Israelbls.vscode-drop-bridge"
+      target="_blank"
+      rel="noopener noreferrer"
+      id="installVscodeExtensionLink"
+    >
+      Install VS Code Extension
+    </a>
+
+    <div class="note-text">
+      This requires <strong>both</strong> extensions: the VS Code extension (Marketplace) and this browser extension.
+    </div>
+    
+    <a href="options.html" target="_blank" class="settings-link" id="settingsLink">
+      <span>Advanced Settings</span>
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M9.4 18L8 16.6l4.6-4.6L8 7.4 9.4 6l6 6-6 6z"/>
+      </svg>
+    </a>
+    
+    <div class="info-text" id="infoText">
+      Drag files from VSCode's explorer to any website, or copy files and paste them into file upload areas.
+    </div>
+    
+    <div class="version" id="version">v1.0.0</div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
