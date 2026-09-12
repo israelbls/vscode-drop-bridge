@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "VSCode Drop Bridge",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Seamlessly drag and drop or copy-paste files from VSCode to web browsers. Works with ChatGPT, Claude, Grok, and Gemini.",
   "icons": {
     "16": "icons/icon16.png",
@@ -16,30 +16,23 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://chat.openai.com/*",
-        "https://chatgpt.com/*",
-        "https://claude.ai/*",
-        "https://grok.com/*",
-        "https://x.com/i/grok*",
-        "https://gemini.google.com/*"
-      ],
+      "matches": ["<all_urls>"],
       "js": ["constants.js", "utils.js", "api.js", "content_script.js"],
       "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["inject.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
       "all_frames": true
     }
   ],
   "web_accessible_resources": [
     {
       "resources": ["inject.js"],
-      "matches": [
-        "https://chat.openai.com/*",
-        "https://chatgpt.com/*",
-        "https://claude.ai/*",
-        "https://grok.com/*",
-        "https://x.com/*",
-        "https://gemini.google.com/*"
-      ]
+      "matches": ["<all_urls>"]
     }
   ],
   "action": {
