@@ -20,6 +20,7 @@ let debugMode = false;
 // Initialize debug mode from storage
 chrome.storage.sync.get(["debugMode"], (result) => {
   debugMode = result.debugMode === true;
+  log("Debug mode:", debugMode);
 });
 
 // Monitor debug mode changes
@@ -62,8 +63,8 @@ async function checkServerHealth() {
       };
       return serverStatus;
     }
-  } catch {
-    // Server not running or error
+  } catch (err) {
+    log("Health check failed:", err.message);
   }
 
   serverStatus = {
@@ -116,9 +117,28 @@ async function clearClipboard() {
 }
 
 /**
+ * Sets clipboard files on the local server.
+ */
+async function setClipboard(paths) {
+  const response = await fetch(`${SERVER_URL}/clipboard`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paths }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to set clipboard");
+  }
+
+  return response.json();
+}
+
+/**
  * Handles incoming messages from content scripts and popup.
  */
-function handleMessage(message, _sender, sendResponse) {
+function handleMessage(message, sendResponse) {
+  log("Message:", message?.type, message);
+
   if (!message?.type) {
     return false;
   }
@@ -152,6 +172,12 @@ function handleMessage(message, _sender, sendResponse) {
     case "clearClipboard":
       clearClipboard()
         .then(() => sendResponse({ success: true }))
+        .catch((err) => sendResponse({ success: false, error: err.message }));
+      return true;
+
+    case "setClipboard":
+      setClipboard(message.paths)
+        .then((data) => sendResponse({ success: true, data }))
         .catch((err) => sendResponse({ success: false, error: err.message }));
       return true;
 
