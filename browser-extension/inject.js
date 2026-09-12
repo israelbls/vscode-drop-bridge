@@ -33,7 +33,13 @@
     "text/x-c++src",
   ];
 
-  const NOTIFICATION_DURATION = 4000;
+  let debugMode = false;
+
+  function log(...args) {
+    if (debugMode) {
+      console.log("[VSCode Drop Bridge INJECT]", ...args);
+    }
+  }
 
   // ============================================================================
   // State
@@ -435,7 +441,6 @@
   // ============================================================================
   // Notification
   // ============================================================================
-
   /**
    * Shows a notification toast (needed in page context, can't use shared utils).
    */
@@ -518,16 +523,24 @@
    */
   function handleDropFiles(filesData, target) {
     try {
+      log("Creating", filesData.length, "File objects");
       const files = filesData.map(createFileFromData);
+      log(
+        "Created File objects:",
+        files.map((file) => file.name),
+      );
       const fileInput = findSuitableFileInput();
 
       if (fileInput) {
+        log("Using file input:", fileInput);
         setFilesOnInput(fileInput, files);
         sendResponse("dropComplete", true, "fileInput", files.length);
         return;
       }
 
+      log("Dispatching synthetic drop at:", target.x, target.y);
       const method = dispatchSyntheticDrop(files, target.x, target.y);
+      log("Synthetic drop dispatched via:", method);
       sendResponse("dropComplete", true, method, files.length);
     } catch (err) {
       console.error("VSCode Drop Bridge: Failed to drop files:", err);
@@ -560,13 +573,24 @@
     if (!data || data.source !== MESSAGE_SOURCE.CONTENT) return;
 
     switch (data.type) {
+      case "setDebugMode":
+        debugMode = data.debugMode === true;
+        break;
+      case "ping":
+        log("Received ping");
+        sendResponse("injected", true, "handshake", 0);
+        break;
       case "dragStart":
+        log("Received dragStart:", {
+          paths: Array.isArray(data.paths) ? data.paths.length : 0,
+        });
         window.__vscodeDragActive = true;
-        window.__vscodeDragPath = data.path;
+        window.__vscodeDragPath = Array.isArray(data.paths) ? data.paths[0] : data.path;
         window.__vscodeDragFile = null;
         break;
 
       case "dragEnd":
+        log("Received dragEnd");
         window.__vscodeDragActive = false;
         window.__vscodeDragPath = null;
         window.__vscodeDragFile = null;
@@ -589,8 +613,14 @@
         break;
 
       case "dropFiles":
+        log("Received dropFiles:", {
+          files: data.files?.length ?? 0,
+          target: data.target,
+        });
         if (data.files?.length > 0 && data.target) {
           handleDropFiles(data.files, data.target);
+        } else {
+          log("dropFiles ignored: missing files or target");
         }
         break;
     }
