@@ -115,8 +115,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     saveSetting("enabled", elements.enableToggle.checked);
   });
 
-  elements.debugToggle.addEventListener("change", () => {
-    saveSetting("debugMode", elements.debugToggle.checked);
+  elements.debugToggle.addEventListener("change", async () => {
+    const value = elements.debugToggle.checked;
+    await saveSetting("debugMode", value);
   });
 
   elements.settingsLink.addEventListener("click", (e) => {
