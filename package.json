@@ -10,6 +10,7 @@
     "package:browser": "cd browser-extension && zip -r ../vscode-drop-bridge-browser.zip ."
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.13",
     "archiver": "^7.0.1",
     "sharp": "^0.35.4"
   }
