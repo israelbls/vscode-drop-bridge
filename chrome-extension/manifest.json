@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "VSCode Drop Bridge",
+  "version": "1.2.1",
+  "description": "Seamlessly drag and drop or copy-paste files from VSCode to web browsers. Works with ChatGPT, Claude, Grok, and Gemini.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["http://localhost:48369/*", "http://127.0.0.1:48369/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["constants.js", "utils.js", "api.js", "content_script.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["inject.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["inject.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "VSCode Drop Bridge",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "options_page": "options.html",
+  "homepage_url": "https://github.com/israelbls/vscode-drop-bridge"
+}
