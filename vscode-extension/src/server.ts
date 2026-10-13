@@ -3,33 +3,22 @@
  * Provides endpoints for health checks, file retrieval, and clipboard operations.
  */
 
-import * as http from "http";
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as http from "node:http";
+import * as path from "node:path";
 import * as mime from "mime-types";
-
-import {
-  PORT,
-  VERSION,
-  MAX_FILE_SIZE,
-  MAX_REQUEST_BODY_SIZE,
-  EXTENSION_NAME,
-} from "./constants";
-import {
-  StatusCallback,
-  HealthResponse,
-  FileResponse,
+import { clearClipboard, getClipboardFiles, setClipboardFiles } from "./clipboard-state";
+import { EXTENSION_NAME, MAX_FILE_SIZE, MAX_REQUEST_BODY_SIZE, PORT, VERSION } from "./constants";
+import { Logger } from "./logger";
+import type {
+  ClipboardDeleteResponse,
   ClipboardGetResponse,
   ClipboardPostResponse,
-  ClipboardDeleteResponse,
   ErrorResponse,
+  FileResponse,
+  HealthResponse,
+  StatusCallback,
 } from "./types";
-import {
-  getClipboardFiles,
-  setClipboardFiles,
-  clearClipboard,
-} from "./clipboard-state";
-import { Logger } from "./logger";
 
 let server: http.Server | null = null;
 let statusCallback: StatusCallback | null = null;
@@ -53,11 +42,7 @@ function setCorsHeaders(res: http.ServerResponse): void {
 /**
  * Sends a JSON response with the specified status code.
  */
-function sendJson<T>(
-  res: http.ServerResponse,
-  statusCode: number,
-  data: T
-): void {
+function sendJson<T>(res: http.ServerResponse, statusCode: number, data: T): void {
   res.writeHead(statusCode, { "Content-Type": "application/json" });
   res.end(JSON.stringify(data));
 }
@@ -169,10 +154,7 @@ function handleClipboardGet(res: http.ServerResponse): void {
 /**
  * Handles POST /clipboard - sets clipboard files.
  */
-function handleClipboardPost(
-  req: http.IncomingMessage,
-  res: http.ServerResponse
-): void {
+function handleClipboardPost(req: http.IncomingMessage, res: http.ServerResponse): void {
   let body = "";
   let bodySize = 0;
 
@@ -197,11 +179,7 @@ function handleClipboardPost(
 
     try {
       const data = JSON.parse(body);
-      const paths: string[] = Array.isArray(data.paths)
-        ? data.paths
-        : data.path
-        ? [data.path]
-        : [];
+      const paths: string[] = Array.isArray(data.paths) ? data.paths : data.path ? [data.path] : [];
 
       if (paths.length === 0) {
         sendJson<ErrorResponse>(res, 400, {
@@ -239,10 +217,7 @@ function handleClipboardDelete(res: http.ServerResponse): void {
 /**
  * Main request handler for all HTTP requests.
  */
-function handleRequest(
-  req: http.IncomingMessage,
-  res: http.ServerResponse
-): void {
+function handleRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
   setCorsHeaders(res);
 
   if (req.method === "OPTIONS") {
@@ -297,9 +272,7 @@ export function startServer(onStatusChange?: StatusCallback): Promise<void> {
 
     server.on("error", (err: NodeJS.ErrnoException) => {
       if (err.code === "EADDRINUSE") {
-        Logger.info(
-          `Port ${PORT} already in use - another instance may be running`
-        );
+        Logger.info(`Port ${PORT} already in use - another instance may be running`);
         statusCallback?.(true);
         resolve();
       } else {
@@ -310,9 +283,7 @@ export function startServer(onStatusChange?: StatusCallback): Promise<void> {
     });
 
     server.listen(PORT, "127.0.0.1", () => {
-      Logger.info(
-        `${EXTENSION_NAME} server running on http://127.0.0.1:${PORT}`
-      );
+      Logger.info(`${EXTENSION_NAME} server running on http://127.0.0.1:${PORT}`);
       statusCallback?.(true);
       resolve();
     });
@@ -340,8 +311,8 @@ export function stopServer(): Promise<void> {
  * Checks if the server is currently running.
  */
 export function isServerRunning(): boolean {
-  return server !== null && server.listening;
+  return server?.listening ?? false;
 }
 
 // Re-export clipboard functions for use by clipboard.ts
-export { setClipboardFiles, clearClipboard };
+export { clearClipboard, setClipboardFiles };

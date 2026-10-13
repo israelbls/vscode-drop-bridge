@@ -4,8 +4,8 @@
  */
 
 import * as vscode from "vscode";
-import { setClipboardFiles } from "./server";
 import { Logger } from "./logger";
+import { setClipboardFiles } from "./server";
 
 let disposables: vscode.Disposable[] = [];
 
@@ -73,11 +73,7 @@ function extractFilePaths(content: string): string[] {
     const trimmed = line.trim();
 
     // Unix path
-    if (
-      trimmed.startsWith("/") &&
-      trimmed.length > 1 &&
-      !paths.includes(trimmed)
-    ) {
+    if (trimmed.startsWith("/") && trimmed.length > 1 && !paths.includes(trimmed)) {
       paths.push(trimmed);
     }
 
@@ -113,7 +109,7 @@ async function validateFilePaths(paths: string[]): Promise<string[]> {
  */
 async function handleCopyFromExplorer(
   uri: vscode.Uri | undefined,
-  uris: vscode.Uri[] | undefined
+  uris: vscode.Uri[] | undefined,
 ): Promise<void> {
   let filePaths: string[] = [];
 
@@ -139,7 +135,7 @@ async function handleCopyFromExplorer(
 
     vscode.window.setStatusBarMessage(
       `Drop Bridge: ${validPaths.length} file(s) ready for paste`,
-      3000
+      3000,
     );
 
     // Execute native copy for context menu case
@@ -148,9 +144,7 @@ async function handleCopyFromExplorer(
     }
 
     // Write marker for browser extension detection
-    await vscode.env.clipboard.writeText(
-      `vscode-drop-bridge:${validPaths.length}`
-    );
+    await vscode.env.clipboard.writeText(`vscode-drop-bridge:${validPaths.length}`);
   } else if (uri || (uris && uris.length > 0)) {
     // No valid files - execute native copy only
     await vscode.commands.executeCommand("filesExplorer.copy");
@@ -230,12 +224,10 @@ async function getPathsFromKeyboardShortcut(): Promise<string[]> {
 /**
  * Registers clipboard command handlers.
  */
-export function registerClipboardHandlers(
-  context: vscode.ExtensionContext
-): void {
+export function registerClipboardHandlers(context: vscode.ExtensionContext): void {
   const copyFromExplorer = vscode.commands.registerCommand(
     "vscode-drop-bridge.copyFilesFromExplorer",
-    handleCopyFromExplorer
+    handleCopyFromExplorer,
   );
 
   disposables.push(copyFromExplorer);
@@ -261,9 +253,7 @@ export function startClipboardMonitor(context: vscode.ExtensionContext): void {
 
           if (validPaths.length > 0) {
             setClipboardFiles(validPaths);
-            Logger.debug(
-              `Detected ${validPaths.length} file path(s) in clipboard`
-            );
+            Logger.debug(`Detected ${validPaths.length} file path(s) in clipboard`);
           }
         }
       }

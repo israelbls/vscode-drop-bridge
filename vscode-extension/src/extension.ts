@@ -4,14 +4,14 @@
  */
 
 import * as vscode from "vscode";
-import { startServer, stopServer, isServerRunning } from "./server";
 import {
+  disposeClipboardHandlers,
   registerClipboardHandlers,
   startClipboardMonitor,
-  disposeClipboardHandlers,
 } from "./clipboard";
+import { EXTENSION_NAME, PORT } from "./constants";
 import { Logger } from "./logger";
-import { PORT, EXTENSION_NAME } from "./constants";
+import { isServerRunning, startServer, stopServer } from "./server";
 
 let statusBarItem: vscode.StatusBarItem;
 
@@ -26,9 +26,7 @@ function updateStatusBar(running: boolean): void {
   } else {
     statusBarItem.text = "$(cloud-offline) Drop Bridge";
     statusBarItem.tooltip = `${EXTENSION_NAME}: Server stopped\nClick to start`;
-    statusBarItem.backgroundColor = new vscode.ThemeColor(
-      "statusBarItem.warningBackground"
-    );
+    statusBarItem.backgroundColor = new vscode.ThemeColor("statusBarItem.warningBackground");
   }
   statusBarItem.show();
 }
@@ -43,14 +41,10 @@ async function handleToggleServer(): Promise<void> {
   } else {
     try {
       await startServer(updateStatusBar);
-      vscode.window.showInformationMessage(
-        `${EXTENSION_NAME}: Server started on port ${PORT}`
-      );
+      vscode.window.showInformationMessage(`${EXTENSION_NAME}: Server started on port ${PORT}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      vscode.window.showErrorMessage(
-        `${EXTENSION_NAME}: Failed to start server - ${message}`
-      );
+      vscode.window.showErrorMessage(`${EXTENSION_NAME}: Failed to start server - ${message}`);
     }
   }
 }
@@ -58,24 +52,19 @@ async function handleToggleServer(): Promise<void> {
 /**
  * Extension activation handler.
  */
-export async function activate(
-  context: vscode.ExtensionContext
-): Promise<void> {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
   Logger.initialize(context);
   Logger.info("Activating extension");
 
   // Create status bar item
-  statusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Right,
-    100
-  );
+  statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   statusBarItem.command = "vscode-drop-bridge.toggleServer";
   context.subscriptions.push(statusBarItem);
 
   // Register toggle command
   const toggleCommand = vscode.commands.registerCommand(
     "vscode-drop-bridge.toggleServer",
-    handleToggleServer
+    handleToggleServer,
   );
   context.subscriptions.push(toggleCommand);
 
